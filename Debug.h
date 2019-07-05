@@ -14,6 +14,8 @@ using namespace std::chrono;
 namespace TIME {
     static long positions_searched = 0;
 
+    static long int isPossibleMove = 0;
+
     static long int applyTime = 0;
     static long int getActionTime = 0;
     static long int bsSetTime = 0;

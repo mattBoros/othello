@@ -14,6 +14,7 @@ using namespace std::chrono;
 #include "State.h"
 #include "Piece.h"
 #include "Util.h"
+#include "TimerWidget.h"
 
 static const char NEG_INFINITY = -127;
 static const char POS_INFINITY = 127;
@@ -49,10 +50,7 @@ public:
                                  const unsigned char xIndex,
                                  const unsigned char yIndex,
                                  const bool oppPiece) {
-//        long int t1 = TIME::getTime();
         const bool r = state.isEmpty(xIndex, yIndex) && Util::hasAnySurround(state, xIndex, yIndex, oppPiece);
-//        long int t2 = TIME::getTime();
-//        TIME::getActionTime += (t2 - t1);
         return r;
     }
 

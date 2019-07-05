@@ -8,6 +8,10 @@ using namespace std;
 #include "State.h"
 #include "Piece.h"
 
+double toMs(long x) {
+    return (x / 1000.0) / 1000.0;
+}
+
 // try -O2
 int main(int argc, char *argv[]) {
 //    unsigned long long blackPieces = _atoi64(argv[1]);
