@@ -15,10 +15,37 @@ using namespace std::chrono;
 #include "Piece.h"
 #include "Util.h"
 #include "TimerWidget.h"
+#include "ThreadPool.h"
 
 static const char NEG_INFINITY = -127;
 static const char POS_INFINITY = 127;
 
+int tempFn(State s) {
+    return 5;
+}
+
+namespace {
+struct Result {
+    Action action;
+    char value;
+};
+
+struct Input {
+    State state;
+    unsigned int x;
+    unsigned int y;
+
+    const bool side;
+    const bool oppSide;
+    const unsigned char maxDepth;
+};
+
+    Result compute(Input) {
+        
+    }
+    
+
+}
 
 class AlphaBeta {
 public:
@@ -35,6 +62,10 @@ public:
         struct timeval tp;
         gettimeofday(&tp, NULL);
         long int t1 = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+
+        ThreadPool<int, State> threadPool(8);
+        auto future = threadPool.scheduleWork(tempFn, state);
+        threadPool.join();
 
         Action* f = max_value_initial(state);
 
@@ -70,15 +101,15 @@ public:
         if (terminal_test(state)) {
             return new Action(false, 100, 100);
         }
-        char v = NEG_INFINITY;
+        char max = NEG_INFINITY;
         Action* best_action = nullptr;
         for (unsigned char i = 0; i < 8; ++i) {
             for (unsigned char j = 0; j < 8; ++j) {
                 if (is_possible_move(state, i, j, oppSide)) {
                     const State s = Util::applyAction(state, i, j, side);
                     const char min_val = min_value(s, NEG_INFINITY, POS_INFINITY, 0);
-                    if (min_val >= v) {
-                        v = min_val;
+                    if (min_val >= max) {
+                        max = min_val;
                         best_action = new Action(side, i, j);
                     }
                 }

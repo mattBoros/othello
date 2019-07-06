@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(othello)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Ofast -funroll-loops -mtune=native -fomit-frame-pointer")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Ofast -funroll-loops -mtune=native -fomit-frame-pointer -pthread")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
