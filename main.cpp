@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 //        sideBool = Piece::WHITE;
 //    }
     bool sideBool = Piece::BLACK;
-    unsigned char depth = 10;
+    unsigned char depth = 12;
     AlphaBeta alphaBeta(depth, sideBool);
     unsigned long long blackPieces = 2342794498872380161LL;
     unsigned long long whitePieces = 1115969461956412422LL;
@@ -37,13 +37,23 @@ int main(int argc, char *argv[]) {
     startingBoard->print();
 
 //    cout << ((int) alphaBeta.min_value(startingBoard, -100, 100, 0)) << endl;
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    long int t1 = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+
     alphaBeta.alpha_beta_search(*startingBoard).print();
+
+    gettimeofday(&tp, NULL);
+    long int t2 = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+    double time = (t2 - t1) / 1000.0;
+    cout << "Time taken : " << time << endl;
 
     cout << "Apply Time : " << TIME::applyTime / 1000.0 << endl;
     cout << "Action Get Time : " << TIME::getActionTime / 1000.0 << endl;
     cout << "BS Set Time : " << TIME::bsSetTime / 1000.0 << endl;
     cout << "BS Get Time : " << TIME::bsGetTime / 1000.0 << endl;
     cout << "Positions searched : " << TIME::positions_searched << endl;
+    cout << "Positions per second : " << TIME::positions_searched / time << endl;
 }
 
 

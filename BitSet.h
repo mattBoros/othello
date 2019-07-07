@@ -156,6 +156,12 @@ public:
     void inline set(const unsigned char bitIndex, const bool value) {
 //        long int t1 = TIME::getTime();
 
+//        if(value){
+//            set(bitIndex);
+//        } else {
+//            clear(bitIndex);
+//        }
+
         word = (word & INVERTED_SHIFTED_ONES[bitIndex]) | (static_cast<unsigned long long>(value) << bitIndex);
 
 //        long int t2 = TIME::getTime();

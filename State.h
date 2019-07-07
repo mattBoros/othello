@@ -37,7 +37,7 @@ public:
     const unsigned char numBlack;
     const unsigned char numWhite;
 
-    static inline BitSet OR_Bitsets(const BitSet &b1, const BitSet &b2){
+    static inline BitSet OR_Bitsets(const BitSet b1, const BitSet b2){
         return BitSet(b1.word | b2.word);
 //        BitSet newBS;
 //        for (unsigned char i = 0; i < 64; ++i) {
@@ -46,12 +46,25 @@ public:
 //        return newBS;
     }
 
-    inline State(const BitSet& blackPieces, const BitSet& whitePieces, const unsigned char numEmptySpots,
-            const unsigned char numBlack, const unsigned char numWhite) :
-            blackPieces(blackPieces), whitePieces(whitePieces),
+    inline State(
+            const BitSet& blackPieces,
+            const BitSet& whitePieces,
+            const unsigned char numEmptySpots,
+            const unsigned char numBlack,
+            const unsigned char numWhite
+            ) :
+            blackPieces(blackPieces),
+            whitePieces(whitePieces),
             ORd_board(OR_Bitsets(blackPieces, whitePieces)),
-            numEmptySpots(numEmptySpots), numBlack(numBlack), numWhite(numWhite) {
+            numEmptySpots(numEmptySpots),
+            numBlack(numBlack),
+            numWhite(numWhite) {
 
+    }
+
+    inline unsigned char getNumEmptySpots() const {
+        return numEmptySpots;
+//        return 64 - numWhite - numBlack;
     }
 
     bool inline isBlack(const unsigned char x, const unsigned char y) const {
@@ -67,7 +80,7 @@ public:
     }
 
     bool inline isPiece(const unsigned char x, const unsigned char y, const bool piece) const {
-        if (piece == Piece::BLACK) {
+        if (piece) { // piece == Piece::BLACK
             return isBlack(x, y);
         } else {
             return isWhite(x, y);
@@ -106,7 +119,12 @@ namespace Helpers2 {
         Helpers::setOnBoard(3, 4, blackPieces, true);
         Helpers::setOnBoard(4, 3, blackPieces, true);
 
-        return new State(blackPieces, whitePieces, 8 * 8 - 4, 2, 2);
+        return new State(blackPieces,
+                whitePieces,
+                8 * 8 - 4,
+                2,
+                2
+                );
     }
 
     static State *getBoard(const unsigned long long blackPieces, const unsigned long long whitePieces) {
@@ -123,11 +141,17 @@ namespace Helpers2 {
                 if (Helpers::getFromBoard(i, j, whitePiecesBS)) {
                     ++numWhite;
                 }
+
             }
         }
 
         unsigned char numEmptySpots = 64 - (numBlack + numWhite);
-        return new State(blackPiecesBS, whitePiecesBS, numEmptySpots, numBlack, numWhite);
+        return new State(blackPiecesBS,
+                whitePiecesBS,
+                numEmptySpots,
+                numBlack,
+                numWhite
+                );
     }
 }
 

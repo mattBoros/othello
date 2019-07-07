@@ -5,6 +5,7 @@
 #include "AlphaBeta.h"
 #include "Debug.h"
 #include "State.h"
+#include "ActionInfo.h"
 
 namespace Util {
 
@@ -14,36 +15,39 @@ namespace Util {
         while (y < 8 && state.isPiece(startX, y, opposite_piece)) {
             ++y;
         }
+//        return !(y >= 8 || state.isEmpty(startX, y)) && y - startY - 1 != 0;
         if (y >= 8 || state.isEmpty(startX, y)) {
             return false;
         }
-        const char streak = y - startY - 1;
+        const unsigned char streak = y - startY - 1;
         return streak != 0;
     }
 
     static inline bool hasDownSurround(const State &state, const unsigned char startX, const unsigned char startY,
                                       const bool opposite_piece) {
-        char y = startY-1;
+        signed char y = startY-1;
         while (y >= 0 && state.isPiece(startX, y, opposite_piece)) {
             --y;
         }
+//        return !(y < 0 || state.isEmpty(startX, y)) && startY - y - 1 != 0;
         if (y < 0 || state.isEmpty(startX, y)) {
             return false;
         }
-        const char streak = startY - y - 1;
+        const signed char streak = startY - y - 1;
         return streak != 0;
     }
 
     static  inline bool hasLeftSurround(const State &state, const unsigned char startX, const unsigned char startY,
                                       const bool opposite_piece) {
-        char x = startX-1;
+        signed char x = startX-1;
         while (x >= 0 && state.isPiece(x, startY, opposite_piece)) {
             --x;
         }
+//        return !(x < 0 || state.isEmpty(x, startY)) && startX - x - 1 != 0;
         if (x < 0 || state.isEmpty(x, startY)) {
             return false;
         }
-        const char streak = startX - x - 1;
+        const signed char streak = startX - x - 1;
         return streak != 0;
     }
 
@@ -53,10 +57,11 @@ namespace Util {
         while (x < 8 && state.isPiece(x, startY, opposite_piece)) {
             ++x;
         }
+//        return !(x >= 8 || state.isEmpty(x, startY)) && x - startX - 1 != 0;
         if (x >= 8 || state.isEmpty(x, startY)) {
             return false;
         }
-        const char streak = x - startX - 1;
+        const signed char streak = x - startX - 1;
         return streak != 0;
     }
 
@@ -68,40 +73,43 @@ namespace Util {
             ++x;
             ++y;
         }
+//        return !(y >= 8 || x >= 8 || state.isEmpty(x, y)) && y - startY - 1 != 0;
         if (y >= 8 || x >= 8 || state.isEmpty(x, y)) {
             return false;
         }
-        const char streak = y - startY - 1;
+        const signed char streak = y - startY - 1;
         return streak != 0;
     }
 
     static inline bool hasUpLeftSurround(const State &state, const unsigned char startX, const unsigned char startY,
                                         const bool opposite_piece) {
-        char x = startX-1;
+        signed char x = startX-1;
         unsigned char y = startY+1;
         while (x >= 0 && y < 8 && state.isPiece(x, y, opposite_piece)) {
             --x;
             ++y;
         }
+//        return !(y >= 8 || x < 0 || state.isEmpty(x, y)) && y - startY - 1 != 0;
         if (y >= 8 || x < 0 || state.isEmpty(x, y)) {
             return false;
         }
-        const char streak = y - startY - 1;
+        const signed char streak = y - startY - 1;
         return streak != 0;
     }
 
     static inline bool hasDownRightSurround(const State &state, const unsigned char startX, const unsigned char startY,
                                            const bool opposite_piece) {
         unsigned char x = startX+1;
-        char y = startY-1;
+        signed char y = startY-1;
         while (x < 8 && y >= 0 && state.isPiece(x, y, opposite_piece)) {
             ++x;
             --y;
         }
+//        return !(y < 0 || x >= 8 || state.isEmpty(x, y)) && startY - y - 1 != 0;
         if (y < 0 || x >= 8 || state.isEmpty(x, y)) {
             return false;
         }
-        const char streak = startY - y - 1;
+        const signed char streak = startY - y - 1;
         return streak != 0;
     }
 
@@ -109,112 +117,138 @@ namespace Util {
                                           const unsigned char startX,
                                           const unsigned char startY,
                                           const bool opposite_piece) {
-        char x = startX-1;
-        char y = startY-1;
+        signed char x = startX-1;
+        signed char y = startY-1;
         while (x >= 0 && y >= 0 && state.isPiece(x, y, opposite_piece)) {
             --x;
             --y;
         }
+//        return !(x < 0 || y < 0 || state.isEmpty(x, y)) && startY - y - 1 != 0;
         if (x < 0 || y < 0 || state.isEmpty(x, y)) {
             return false;
         }
-        const char streak = startY - y - 1;
+        const signed char streak = startY - y - 1;
         return streak != 0;
     }
 
-    static bool inline
-    hasAnySurround(const State &state, const unsigned char startX, const unsigned char startY, const bool opp) {
+    static inline const ActionInfo
+    getSurroundInfo(const State &state, const unsigned char startX, const unsigned char startY, const bool opp) {
         const bool x1 = startX <= 1;
         const bool y1 = startY <= 1;
 
-        if (x1 && y1) {
-            return
-                    hasUpRightSurround(state, startX, startY, opp) ||
-                    hasUpLeftSurround(state, startX, startY, opp) ||
-                    hasDownRightSurround(state, startX, startY, opp) ||
-                    hasUpSurround(state, startX, startY, opp) ||
-                    hasRightSurround(state, startX, startY, opp);
+        if (x1 && y1) { 
+            return ActionInfo(
+                    hasUpRightSurround(state, startX, startY, opp),
+                    hasUpLeftSurround(state, startX, startY, opp),
+                    hasDownRightSurround(state, startX, startY, opp),
+                    false,
+                    hasUpSurround(state, startX, startY, opp),
+                    false,
+                    false,
+                    hasRightSurround(state, startX, startY, opp)
+                    );
         }
         const bool y6 = startY >= 6;
         if (x1 && y6) {
-            return
-                    hasUpRightSurround(state, startX, startY, opp) ||
-                    hasDownRightSurround(state, startX, startY, opp) ||
-                    hasDownLeftSurround(state, startX, startY, opp) ||
-                    hasDownSurround(state, startX, startY, opp) ||
-                    hasRightSurround(state, startX, startY, opp);
+            return ActionInfo(
+                    hasUpRightSurround(state, startX, startY, opp),
+                    false,
+                    hasDownRightSurround(state, startX, startY, opp),
+                    hasDownLeftSurround(state, startX, startY, opp),
+                    false,
+                    hasDownSurround(state, startX, startY, opp),
+                    false,
+                    hasRightSurround(state, startX, startY, opp)
+            );
         }
         const bool x6 = startX >= 6;
         if (x6 && y6) {
-            return
-                    hasUpRightSurround(state, startX, startY, opp) ||
-                    hasUpLeftSurround(state, startX, startY, opp) ||
-                    hasDownLeftSurround(state, startX, startY, opp) ||
-                    hasDownSurround(state, startX, startY, opp) ||
-                    hasLeftSurround(state, startX, startY, opp);
+            return ActionInfo(
+                    hasUpRightSurround(state, startX, startY, opp),
+                    hasUpLeftSurround(state, startX, startY, opp),
+            false,
+                    hasDownLeftSurround(state, startX, startY, opp),
+            false,
+                    hasDownSurround(state, startX, startY, opp),
+                    hasLeftSurround(state, startX, startY, opp),
+            false
+            );
         }
         if (x6 && y1) {
-            return
-                    hasUpLeftSurround(state, startX, startY, opp) ||
-                    hasDownRightSurround(state, startX, startY, opp) ||
-                    hasDownLeftSurround(state, startX, startY, opp) ||
-                    hasUpSurround(state, startX, startY, opp) ||
-                    hasLeftSurround(state, startX, startY, opp);
+            return ActionInfo(
+                    false,
+                    hasUpLeftSurround(state, startX, startY, opp),
+                    hasDownRightSurround(state, startX, startY, opp),
+                    hasDownLeftSurround(state, startX, startY, opp),
+                    hasUpSurround(state, startX, startY, opp),
+                    false,
+                    hasLeftSurround(state, startX, startY, opp),
+                    false
+            );
         }
         if (x1) {
-            return
-                    hasUpRightSurround(state, startX, startY, opp) ||
-                    hasUpLeftSurround(state, startX, startY, opp) ||
-                    hasDownRightSurround(state, startX, startY, opp) ||
-                    hasDownLeftSurround(state, startX, startY, opp) ||
-                    hasUpSurround(state, startX, startY, opp) ||
-                    hasDownSurround(state, startX, startY, opp) ||
-                    hasRightSurround(state, startX, startY, opp);
+            return ActionInfo(
+                    hasUpRightSurround(state, startX, startY, opp),
+                    hasUpLeftSurround(state, startX, startY, opp),
+                    hasDownRightSurround(state, startX, startY, opp),
+                    hasDownLeftSurround(state, startX, startY, opp),
+                    hasUpSurround(state, startX, startY, opp),
+                    hasDownSurround(state, startX, startY, opp),
+                    false,
+                    hasRightSurround(state, startX, startY, opp)
+            );
         }
         if (y1) {
-            return
-                    hasUpRightSurround(state, startX, startY, opp) ||
-                    hasUpLeftSurround(state, startX, startY, opp) ||
-                    hasDownRightSurround(state, startX, startY, opp) ||
-                    hasDownLeftSurround(state, startX, startY, opp) ||
-                    hasUpSurround(state, startX, startY, opp) ||
-                    hasLeftSurround(state, startX, startY, opp) ||
-                    hasRightSurround(state, startX, startY, opp);
+            return ActionInfo(
+                    hasUpRightSurround(state, startX, startY, opp),
+                    hasUpLeftSurround(state, startX, startY, opp),
+                    hasDownRightSurround(state, startX, startY, opp),
+                    hasDownLeftSurround(state, startX, startY, opp),
+                    hasUpSurround(state, startX, startY, opp),
+                    false,
+                    hasLeftSurround(state, startX, startY, opp),
+                    hasRightSurround(state, startX, startY, opp)
+            );
         }
         if (x6) {
-            return
-                    hasUpRightSurround(state, startX, startY, opp) ||
-                    hasUpLeftSurround(state, startX, startY, opp) ||
-                    hasDownRightSurround(state, startX, startY, opp) ||
-                    hasDownLeftSurround(state, startX, startY, opp) ||
-                    hasUpSurround(state, startX, startY, opp) ||
-                    hasDownSurround(state, startX, startY, opp) ||
-                    hasLeftSurround(state, startX, startY, opp);
+            return ActionInfo(
+                    hasUpRightSurround(state, startX, startY, opp),
+                    hasUpLeftSurround(state, startX, startY, opp),
+                    hasDownRightSurround(state, startX, startY, opp),
+                    hasDownLeftSurround(state, startX, startY, opp),
+                    hasUpSurround(state, startX, startY, opp),
+                    hasDownSurround(state, startX, startY, opp),
+                    hasLeftSurround(state, startX, startY, opp),
+                    false
+            );
         }
         if (y6) {
-            return
-                    hasUpRightSurround(state, startX, startY, opp) ||
-                    hasUpLeftSurround(state, startX, startY, opp) ||
-                    hasDownRightSurround(state, startX, startY, opp) ||
-                    hasDownLeftSurround(state, startX, startY, opp) ||
-                    hasDownSurround(state, startX, startY, opp) ||
-                    hasLeftSurround(state, startX, startY, opp) ||
-                    hasRightSurround(state, startX, startY, opp);
+            return ActionInfo(
+                    hasUpRightSurround(state, startX, startY, opp),
+                    hasUpLeftSurround(state, startX, startY, opp),
+                    hasDownRightSurround(state, startX, startY, opp),
+                    hasDownLeftSurround(state, startX, startY, opp),
+                    false,
+                    hasDownSurround(state, startX, startY, opp),
+                    hasLeftSurround(state, startX, startY, opp),
+                    hasRightSurround(state, startX, startY, opp)
+            );
         }
-        return
-                hasUpRightSurround(state, startX, startY, opp) ||
-                hasUpLeftSurround(state, startX, startY, opp) ||
-                hasDownRightSurround(state, startX, startY, opp) ||
-                hasDownLeftSurround(state, startX, startY, opp) ||
-                hasUpSurround(state, startX, startY, opp) ||
-                hasDownSurround(state, startX, startY, opp) ||
-                hasLeftSurround(state, startX, startY, opp) ||
-                hasRightSurround(state, startX, startY, opp);
+        return ActionInfo(
+                hasUpRightSurround(state, startX, startY, opp),
+                hasUpLeftSurround(state, startX, startY, opp),
+                hasDownRightSurround(state, startX, startY, opp),
+                hasDownLeftSurround(state, startX, startY, opp),
+                hasUpSurround(state, startX, startY, opp),
+                hasDownSurround(state, startX, startY, opp),
+                hasLeftSurround(state, startX, startY, opp),
+                hasRightSurround(state, startX, startY, opp)
+        );
     }
 
     static bool inline
     isColor(const unsigned char x, const unsigned char y, const BitSet& blackPieces, const BitSet& whitePieces, const bool color) {
-        if (color == Piece::BLACK) {
+        if (color) { // color == Piece::BLACK
             return Helpers::getFromBoard(x, y, blackPieces);
         } else {
             return Helpers::getFromBoard(x, y, whitePieces);
@@ -222,7 +256,7 @@ namespace Util {
     }
 
     static inline void flipColor(const unsigned char x, const unsigned char y, BitSet& blackPieces, BitSet& whitePieces, const bool piece) {
-        if (piece == Piece::BLACK) {
+        if (piece) { // piece == Piece::BLACK
             Helpers::setOnBoard(x, y, blackPieces, true);
             Helpers::setOnBoard(x, y, whitePieces, false);
         } else {
@@ -233,14 +267,16 @@ namespace Util {
 
 
     const inline State applyAction(const State &state,
-            const unsigned char xIndex, const unsigned char yIndex,
-            const bool piece) {
+            const unsigned char xIndex,
+            const unsigned char yIndex,
+            const bool piece,
+            const ActionInfo info) {
 //        long int t1 = TIME::getTime();
 
         BitSet blackPieces = state.blackPieces.clone();
         BitSet whitePieces = state.whitePieces.clone();
 
-        if (piece == Piece::BLACK) {
+        if (piece) { // piece == Piece::BLACK
             Helpers::setOnBoard(xIndex, yIndex, blackPieces, true);
         } else {
             Helpers::setOnBoard(xIndex, yIndex, whitePieces, true);
@@ -252,43 +288,39 @@ namespace Util {
         unsigned char x;
         unsigned char y;
 
-        if (hasUpSurround(state, xIndex, yIndex, opposite_piece)) {
-            x = xIndex;
+        if (info.hasUpSurround) {
             y = yIndex+1;
-            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, y, blackPieces, whitePieces, piece);
+            while (isColor(xIndex, y, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(xIndex, y, blackPieces, whitePieces, piece);
                 ++y;
                 ++numFlipped;
             }
         }
-        if (hasDownSurround(state, xIndex, yIndex, opposite_piece)) {
-            x = xIndex;
+        if (info.hasDownSurround) {
             y = yIndex-1;
-            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, y, blackPieces, whitePieces, piece);
+            while (isColor(xIndex, y, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(xIndex, y, blackPieces, whitePieces, piece);
                 --y;
                 ++numFlipped;
             }
         }
-        if (hasLeftSurround(state, xIndex, yIndex, opposite_piece)) {
+        if (info.hasLeftSurround) {
             x = xIndex-1;
-            y = yIndex;
-            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, y, blackPieces, whitePieces, piece);
+            while (isColor(x, yIndex, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(x, yIndex, blackPieces, whitePieces, piece);
                 --x;
                 ++numFlipped;
             }
         }
-        if (hasRightSurround(state, xIndex, yIndex, opposite_piece)) {
+        if (info.hasRightSurround) {
             x = xIndex+1;
-            y = yIndex;
-            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, y, blackPieces, whitePieces, piece);
+            while (isColor(x, yIndex, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(x, yIndex, blackPieces, whitePieces, piece);
                 ++x;
                 ++numFlipped;
             }
         }
-        if (hasUpRightSurround(state, xIndex, yIndex, opposite_piece)) {
+        if (info.hasUpRightSurround) {
             x = xIndex+1;
             y = yIndex+1;
             while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
@@ -298,7 +330,7 @@ namespace Util {
                 ++numFlipped;
             }
         }
-        if (hasUpLeftSurround(state, xIndex, yIndex, opposite_piece)) {
+        if (info.hasUpLeftSurround) {
             x = xIndex-1;
             y = yIndex+1;
             while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
@@ -308,7 +340,7 @@ namespace Util {
                 ++numFlipped;
             }
         }
-        if (hasDownRightSurround(state, xIndex, yIndex, opposite_piece)) {
+        if (info.hasDownRightSurround) {
             x = xIndex+1;
             y = yIndex-1;
             while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
@@ -318,7 +350,7 @@ namespace Util {
                 ++numFlipped;
             }
         }
-        if (hasDownLeftSurround(state, xIndex, yIndex, opposite_piece)) {
+        if (info.hasDownLeftSurround) {
             x = xIndex-1;
             y = yIndex-1;
             while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
@@ -331,12 +363,12 @@ namespace Util {
 
         unsigned char num_black = state.numBlack;
         unsigned char num_white = state.numWhite;
-        if (piece == Piece::WHITE) {
-            num_white += 1 + numFlipped;
-            num_black -= numFlipped;
-        } else {
+        if (piece) { // piece == Piece::BLACK
             num_black += 1 + numFlipped;
             num_white -= numFlipped;
+        } else {
+            num_white += 1 + numFlipped;
+            num_black -= numFlipped;
         }
 
 
@@ -348,6 +380,15 @@ namespace Util {
                      state.numEmptySpots-1,
                      num_black,
                      num_white);
+    }
+
+
+    static inline signed char min(const signed char f1, const signed char f2) {
+        return f2 < f1 ? f2 : f1;
+    }
+
+    static inline signed char max(const signed char f1, const signed char f2) {
+        return f2 > f1 ? f2 : f1;
     }
 
 }
