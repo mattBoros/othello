@@ -33,7 +33,6 @@ public:
     const BitSet blackPieces;
     const BitSet whitePieces;
     const BitSet ORd_board;
-    const unsigned char numEmptySpots;
     const unsigned char numBlack;
     const unsigned char numWhite;
 
@@ -49,22 +48,19 @@ public:
     inline State(
             const BitSet& blackPieces,
             const BitSet& whitePieces,
-            const unsigned char numEmptySpots,
             const unsigned char numBlack,
             const unsigned char numWhite
             ) :
             blackPieces(blackPieces),
             whitePieces(whitePieces),
             ORd_board(OR_Bitsets(blackPieces, whitePieces)),
-            numEmptySpots(numEmptySpots),
             numBlack(numBlack),
             numWhite(numWhite) {
 
     }
 
-    inline unsigned char getNumEmptySpots() const {
-        return numEmptySpots;
-//        return 64 - numWhite - numBlack;
+    inline bool isFull() const {
+        return ORd_board.word == std::numeric_limits<unsigned long long>::max();
     }
 
     bool inline isBlack(const unsigned char x, const unsigned char y) const {
@@ -121,7 +117,6 @@ namespace Helpers2 {
 
         return new State(blackPieces,
                 whitePieces,
-                8 * 8 - 4,
                 2,
                 2
                 );
@@ -145,10 +140,8 @@ namespace Helpers2 {
             }
         }
 
-        unsigned char numEmptySpots = 64 - (numBlack + numWhite);
         return new State(blackPiecesBS,
                 whitePiecesBS,
-                numEmptySpots,
                 numBlack,
                 numWhite
                 );

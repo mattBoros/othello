@@ -377,7 +377,6 @@ namespace Util {
 //        TIME::applyTime += (t2 - t1);
         return State(blackPieces,
                      whitePieces,
-                     state.numEmptySpots-1,
                      num_black,
                      num_white);
     }

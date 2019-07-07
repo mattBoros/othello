@@ -40,11 +40,8 @@ public:
         return *f;
     }
 
-
-
-
     static inline bool terminal_test(const State &state) {
-        return state.getNumEmptySpots() == 0;
+        return state.isFull();
     }
 
     signed char inline eval(const State &state) const {
