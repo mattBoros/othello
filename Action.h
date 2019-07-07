@@ -9,9 +9,9 @@ using namespace std;
 
 class Action {
 public:
-    const bool piece;
-    const unsigned char xIndex;
-    const unsigned char yIndex;
+    bool piece;
+    unsigned char xIndex;
+    unsigned char yIndex;
 
     Action(const bool piece, const unsigned char xIndex, const unsigned char yIndex)
             : piece(piece), xIndex(xIndex), yIndex(yIndex) {

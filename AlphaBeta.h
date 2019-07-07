@@ -4,6 +4,7 @@ using namespace std;
 
 #include <chrono>
 #include <sys/time.h>
+#include <cassert>
 
 using namespace std::chrono;
 
@@ -18,6 +19,18 @@ using namespace std::chrono;
 
 static const char NEG_INFINITY = -127;
 static const char POS_INFINITY = 127;
+
+static inline char nextEmptyPosition(const State& state, char currentPosition) {
+    for (char i = currentPosition; i < 64; i++) {
+        //std::cout << "checking pos " << (int)i << endl;
+        if (!state.ORd_board.get(i)) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 
 
 class AlphaBeta {
@@ -36,21 +49,21 @@ public:
         gettimeofday(&tp, NULL);
         long int t1 = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 
-        Action* f = max_value_initial(state);
+        Action f = max_value_initial(state);
 
         gettimeofday(&tp, NULL);
         long int t2 = tp.tv_sec * 1000 + tp.tv_usec / 1000;
         double time = (t2 - t1) / 1000.0;
         cout << "Time taken : " << time << endl;
 
-        return *f;
+        return f;
     }
 
     static inline bool is_possible_move(const State &state,
                                  const unsigned char xIndex,
                                  const unsigned char yIndex,
                                  const bool oppPiece) {
-        const bool r = state.isEmpty(xIndex, yIndex) && Util::hasAnySurround(state, xIndex, yIndex, oppPiece);
+        const bool r = Util::hasAnySurround(state, xIndex, yIndex, oppPiece);
         return r;
     }
 
@@ -66,24 +79,37 @@ public:
         }
     }
 
-    Action* max_value_initial(const State &state) const {
+    Action max_value_initial(const State &state) const {
         if (terminal_test(state)) {
-            return new Action(false, 100, 100);
+            return Action(false, 100, 100);
         }
         char v = NEG_INFINITY;
-        Action* best_action = nullptr;
-        for (unsigned char i = 0; i < 8; ++i) {
-            for (unsigned char j = 0; j < 8; ++j) {
-                if (is_possible_move(state, i, j, oppSide)) {
-                    const State s = Util::applyAction(state, i, j, side);
-                    const char min_val = min_value(s, NEG_INFINITY, POS_INFINITY, 0);
-                    if (min_val >= v) {
-                        v = min_val;
-                        best_action = new Action(side, i, j);
-                    }
+        Action best_action(0, 0, 0);
+
+        char bitIndex = 0;
+        while (bitIndex < 64) {
+            char nextPos = nextEmptyPosition(state, bitIndex);
+            if (nextPos == -1) {
+                break;
+            }
+            
+            const char x = nextPos / 8;
+            const char y = nextPos % 8;
+            //assert(state.isEmpty(x, y));
+            
+            if (is_possible_move(state, x, y, oppSide)) {
+                // TODO: Don't construct a unless necessary
+                const State s = Util::applyAction(state, x, y, side);
+                const char min_val = min_value(s, NEG_INFINITY, POS_INFINITY, 0);
+                if (min_val >= v) {
+                    v = min_val;
+                    best_action = Action(side, x, y);
                 }
             }
+
+            bitIndex = nextPos + 1;
         }
+
         return best_action;
     }
 
@@ -95,20 +121,32 @@ public:
 
         char v = NEG_INFINITY;
         unsigned char validActions = 0;
-        for (unsigned char i = 0; i < 8; ++i) {
-            for (unsigned char j = 0; j < 8; ++j) {
-                if (is_possible_move(state, i, j, oppSide)) {
-                    const State s = Util::applyAction(state, i, j, side);
-                    v = max(v,
-                            min_value(s, alpha, beta, depth + 1));
-                    if (v >= beta) {
-                        return v;
-                    }
-                    alpha = max(v, alpha);
-                    ++validActions;
-                }
+
+        char bitIndex = 0;
+        while (bitIndex < 64) {
+            char nextPos = nextEmptyPosition(state, bitIndex);
+            if (nextPos == -1) {
+                break;
             }
+
+            const char x = nextPos / 8;
+            const char y = nextPos % 8;
+            //assert(state.isEmpty(x, y));
+
+            if (is_possible_move(state, x, y, oppSide)) {
+                const State s = Util::applyAction(state, x, y, side);
+                v = max(v,
+                        min_value(s, alpha, beta, depth + 1));
+                if (v >= beta) {
+                    return v;
+                }
+                alpha = max(v, alpha);
+                ++validActions;
+            }
+
+            bitIndex = nextPos + 1;
         }
+
         if (validActions == 0) {
             return eval(state);
         }
@@ -117,27 +155,37 @@ public:
 
     char min_value(const State &state, const char alpha, char beta, const unsigned char depth) const {
         TIME::positions_searched++;
-//        state.print();
-//        exit(0);
         if (terminal_test(state) || depth >= maxDepth) {
             return eval(state);
         }
 
         unsigned char validActions = 0;
         char v = POS_INFINITY;
-        for (unsigned char i = 0; i < 8; ++i) {
-            for (unsigned char j = 0; j < 8; ++j) {
-                if (is_possible_move(state, i, j, side)) {
-                    const State s = Util::applyAction(state, i, j, oppSide);
-                    v = min(v, max_value(s, alpha, beta, depth + 1));
-                    if (v <= alpha) {
-                        return v;
-                    }
-                    beta = min(v, beta);
-                    ++validActions;
-                }
+
+        char bitIndex = 0;
+        while (bitIndex < 64) {
+            char nextPos = nextEmptyPosition(state, bitIndex);
+            if (nextPos == -1) {
+                break;
             }
+
+            const char x = nextPos / 8;
+            const char y = nextPos % 8;
+            //assert(state.isEmpty(x, y));
+
+            if (is_possible_move(state, x, y, side)) {
+                const State s = Util::applyAction(state, x, y, oppSide);
+                v = min(v, max_value(s, alpha, beta, depth + 1));
+                if (v <= alpha) {
+                    return v;
+                }
+                beta = min(v, beta);
+                ++validActions;
+            }
+
+            bitIndex = nextPos + 1;
         }
+
         if (validActions == 0) {
             return eval(state);
         }
