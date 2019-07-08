@@ -26,19 +26,27 @@ namespace Helpers {
     static inline void setOnBoard(const unsigned char x, const unsigned char y, BitSet &bitSet, const bool b) {
         bitSet.set(INDEX_LOOKUP_TABLE[x][y], b);
     }
+
+    static inline bool getFromBoard(const unsigned char i, const BitSet &bitSet) {
+        return bitSet.get(i);
+    }
+
+    static inline void setOnBoard(const unsigned char i, BitSet &bitSet, const bool b) {
+        bitSet.set(i, b);
+    }
+
 }
 
 class State {
 public:
     const BitSet blackPieces;
     const BitSet whitePieces;
-    const BitSet ORd_board;
-    const unsigned char numEmptySpots;
+    const BitSet NOT_ORd_board;
     const unsigned char numBlack;
     const unsigned char numWhite;
 
-    static inline BitSet OR_Bitsets(const BitSet b1, const BitSet b2){
-        return BitSet(b1.word | b2.word);
+    static inline BitSet NOT_OR_Bitsets(const BitSet b1, const BitSet b2){
+        return BitSet(~(b1.word | b2.word));
 //        BitSet newBS;
 //        for (unsigned char i = 0; i < 64; ++i) {
 //            newBS.set(i, b1.get(i) || b2.get(i));
@@ -49,22 +57,15 @@ public:
     inline State(
             const BitSet& blackPieces,
             const BitSet& whitePieces,
-            const unsigned char numEmptySpots,
             const unsigned char numBlack,
             const unsigned char numWhite
             ) :
             blackPieces(blackPieces),
             whitePieces(whitePieces),
-            ORd_board(OR_Bitsets(blackPieces, whitePieces)),
-            numEmptySpots(numEmptySpots),
+            NOT_ORd_board(NOT_OR_Bitsets(blackPieces, whitePieces)),
             numBlack(numBlack),
             numWhite(numWhite) {
 
-    }
-
-    inline unsigned char getNumEmptySpots() const {
-        return numEmptySpots;
-//        return 64 - numWhite - numBlack;
     }
 
     bool inline isBlack(const unsigned char x, const unsigned char y) const {
@@ -76,7 +77,11 @@ public:
     }
 
     bool inline isEmpty(const unsigned char x, const unsigned char y) const {
-        return !ORd_board.get(INDEX_LOOKUP_TABLE[x][y]);
+        return NOT_ORd_board.get(INDEX_LOOKUP_TABLE[x][y]);
+    }
+
+    bool inline isEmpty(const unsigned char i) const {
+        return NOT_ORd_board.get(i);
     }
 
     bool inline isPiece(const unsigned char x, const unsigned char y, const bool piece) const {
@@ -121,7 +126,6 @@ namespace Helpers2 {
 
         return new State(blackPieces,
                 whitePieces,
-                8 * 8 - 4,
                 2,
                 2
                 );
@@ -148,7 +152,6 @@ namespace Helpers2 {
         unsigned char numEmptySpots = 64 - (numBlack + numWhite);
         return new State(blackPiecesBS,
                 whitePiecesBS,
-                numEmptySpots,
                 numBlack,
                 numWhite
                 );
