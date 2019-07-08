@@ -10,10 +10,10 @@ using namespace std;
 class Action {
 public:
     const bool piece;
-    const unsigned char xIndex;
-    const unsigned char yIndex;
+    const uint8_t xIndex;
+    const uint8_t yIndex;
 
-    Action(const bool piece, const unsigned char xIndex, const unsigned char yIndex)
+    Action(const bool piece, const uint8_t xIndex, const uint8_t yIndex)
             : piece(piece), xIndex(xIndex), yIndex(yIndex) {
     }
 

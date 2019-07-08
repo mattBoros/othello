@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 //        sideBool = Piece::WHITE;
 //    }
     bool sideBool = Piece::BLACK;
-    unsigned char depth = 12;
+    uint8_t depth = 12;
     AlphaBeta alphaBeta(depth, sideBool);
     unsigned long long blackPieces = 2342794498872380161LL;
     unsigned long long whitePieces = 1115969461956412422LL;

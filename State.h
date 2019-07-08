@@ -7,7 +7,7 @@
 #include "Piece.h"
 #include "Debug.h"
 
-static const unsigned char INDEX_LOOKUP_TABLE[8][8] = {
+static const uint8_t INDEX_LOOKUP_TABLE[8][8] = {
         {0, 1, 2, 3, 4, 5, 6, 7},
         {8, 9, 10, 11, 12, 13, 14, 15},
         {16, 17, 18, 19, 20, 21, 22, 23},
@@ -19,20 +19,32 @@ static const unsigned char INDEX_LOOKUP_TABLE[8][8] = {
 };
 
 namespace Helpers {
-    static inline bool getFromBoard(const unsigned char x, const unsigned char y, const BitSet &bitSet) {
+    static inline bool getFromBoard(const uint8_t x, const uint8_t y, const BitSet& bitSet) {
         return bitSet.get(INDEX_LOOKUP_TABLE[x][y]);
     }
 
-    static inline void setOnBoard(const unsigned char x, const unsigned char y, BitSet &bitSet, const bool b) {
+    static inline void setOnBoard(const uint8_t x, const uint8_t y, BitSet &bitSet, const bool b) {
         bitSet.set(INDEX_LOOKUP_TABLE[x][y], b);
     }
 
-    static inline bool getFromBoard(const unsigned char i, const BitSet &bitSet) {
+    static inline void clearOnBoard(const uint8_t x, const uint8_t y, BitSet &bitSet) {
+        bitSet.clear(INDEX_LOOKUP_TABLE[x][y]);
+    }
+
+    static inline void setOnBoard(const uint8_t x, const uint8_t y, BitSet &bitSet) {
+        bitSet.set(INDEX_LOOKUP_TABLE[x][y]);
+    }
+
+    static inline bool getFromBoard(const uint8_t i, const BitSet &bitSet) {
         return bitSet.get(i);
     }
 
-    static inline void setOnBoard(const unsigned char i, BitSet &bitSet, const bool b) {
+    static inline void setOnBoard(const uint8_t i, BitSet &bitSet, const bool b) {
         bitSet.set(i, b);
+    }
+
+    static inline void setOnBoard(const uint8_t i, BitSet &bitSet) {
+        bitSet.set(i);
     }
 
 }
@@ -42,13 +54,13 @@ public:
     const BitSet blackPieces;
     const BitSet whitePieces;
     const BitSet NOT_ORd_board;
-    const unsigned char numBlack;
-    const unsigned char numWhite;
+    const uint8_t numBlack;
+    const uint8_t numWhite;
 
     static inline BitSet NOT_OR_Bitsets(const BitSet b1, const BitSet b2){
         return BitSet(~(b1.word | b2.word));
 //        BitSet newBS;
-//        for (unsigned char i = 0; i < 64; ++i) {
+//        for (uint8_t i = 0; i < 64; ++i) {
 //            newBS.set(i, b1.get(i) || b2.get(i));
 //        }
 //        return newBS;
@@ -57,8 +69,8 @@ public:
     inline State(
             const BitSet& blackPieces,
             const BitSet& whitePieces,
-            const unsigned char numBlack,
-            const unsigned char numWhite
+            const uint8_t numBlack,
+            const uint8_t numWhite
             ) :
             blackPieces(blackPieces),
             whitePieces(whitePieces),
@@ -68,23 +80,23 @@ public:
 
     }
 
-    bool inline isBlack(const unsigned char x, const unsigned char y) const {
+    bool inline isBlack(const uint8_t x, const uint8_t y) const {
         return Helpers::getFromBoard(x, y, blackPieces);
     }
 
-    bool inline isWhite(const unsigned char x, const unsigned char y) const {
+    bool inline isWhite(const uint8_t x, const uint8_t y) const {
         return Helpers::getFromBoard(x, y, whitePieces);
     }
 
-    bool inline isEmpty(const unsigned char x, const unsigned char y) const {
+    bool inline isEmpty(const uint8_t x, const uint8_t y) const {
         return NOT_ORd_board.get(INDEX_LOOKUP_TABLE[x][y]);
     }
 
-    bool inline isEmpty(const unsigned char i) const {
+    bool inline isEmpty(const uint8_t i) const {
         return NOT_ORd_board.get(i);
     }
 
-    bool inline isPiece(const unsigned char x, const unsigned char y, const bool piece) const {
+    bool inline isPiece(const uint8_t x, const uint8_t y, const bool piece) const {
         if (piece) { // piece == Piece::BLACK
             return isBlack(x, y);
         } else {
@@ -92,7 +104,7 @@ public:
         }
     }
 
-    char get_char(int i, char j) const {
+    char get_char(int i, int j) const {
         if (Helpers::getFromBoard(i, j, blackPieces)) {
             return 'B';
         }
@@ -134,8 +146,8 @@ namespace Helpers2 {
     static State *getBoard(const unsigned long long blackPieces, const unsigned long long whitePieces) {
         const BitSet &blackPiecesBS = *(new BitSet(blackPieces));
         const BitSet &whitePiecesBS = *(new BitSet(whitePieces));
-        unsigned char numBlack = 0;
-        unsigned char numWhite = 0;
+        uint8_t numBlack = 0;
+        uint8_t numWhite = 0;
 
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
@@ -149,7 +161,6 @@ namespace Helpers2 {
             }
         }
 
-        unsigned char numEmptySpots = 64 - (numBlack + numWhite);
         return new State(blackPiecesBS,
                 whitePiecesBS,
                 numBlack,
