@@ -124,9 +124,7 @@ public:
                         return v;
                     }
                     alpha = Util::max(v, alpha);
-                    if (!hasValidActions) {
-                        hasValidActions = true;
-                    }
+                    hasValidActions = true;
                 }
             }
         }
@@ -162,9 +160,7 @@ public:
                         return v;
                     }
                     beta = Util::min(v, beta);
-                    if (!hasValidActions) {
-                        hasValidActions = true;
-                    }
+                    hasValidActions = true;
                 }
             }
         }
