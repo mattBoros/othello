@@ -4,6 +4,7 @@ using namespace std;
 
 #include <chrono>
 #include <sys/time.h>
+#include <climits>
 
 using namespace std::chrono;
 
@@ -41,6 +42,8 @@ static const uint8_t MOD_8_TABLE[64] = {
     0,1,2,3,4,5,6,7
 };
 
+static const unsigned long long MAX_BOARD = ULLONG_MAX;
+
 class AlphaBeta {
 public:
     const uint8_t maxDepth;
@@ -56,13 +59,15 @@ public:
         return *f;
     }
 
-
     static inline bool terminal_test(const State state) {
-        return !state.NOT_ORd_board.word;
+        return state.ORd_board.word == MAX_BOARD;
     }
 
     int8_t inline eval(const State state) const {
-        return (side*2 - 1) * (state.numBlack - state.numWhite);
+//        return side * (state.numBlack - state.numWhite) + oppSide * (state.numWhite - state.numBlack);
+
+        return (side - oppSide) * (state.numBlack - state.numWhite);
+//        return (side*2 - 1) * (state.numBlack - state.numWhite);
 
 //        if (side) { // side == Piece::BLACK
 //            return state.numBlack - state.numWhite;
@@ -78,16 +83,12 @@ public:
         int8_t v = NEG_INFINITY;
         Action *best_action = nullptr;
         for (uint8_t i = 0; i < 64; ++i) {
-//        for (uint8_t i = __builtin_clzll(state.NOT_ORd_board.word); i >= 0; --i) {
             if (state.isEmpty(i)) {
-//                const uint8_t x = i / 8;
-//                const uint8_t y = i % 8;
                 const uint8_t x = DIVIDE_8_TABLE[i];
                 const uint8_t y = MOD_8_TABLE[i];
-                const uint8_t info = Util::getSurroundInfo(state, x, y, oppSide);
-                if (info) {
-                    const State s = Util::applyAction(state, x, y, side, info, i);
-                    const int8_t min_val = min_value(s, NEG_INFINITY, POS_INFINITY, 0);
+                const State newState = Util::applyAction(state, x, y, side, i);
+                if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
+                    const int8_t min_val = min_value(newState, NEG_INFINITY, POS_INFINITY, 0);
                     if (min_val >= v) {
                         v = min_val;
                         best_action = new Action(side, x, y);
@@ -108,16 +109,12 @@ public:
         int8_t v = NEG_INFINITY;
         bool hasValidActions = false;
         for (uint8_t i = 0; i < 64; ++i) {
-//        for (uint8_t i = __builtin_clzll(state.NOT_ORd_board.word); i >= 0; --i) {
             if (state.isEmpty(i)) {
-//                const uint8_t x = i / 8;
-//                const uint8_t y = i % 8;
                 const uint8_t x = DIVIDE_8_TABLE[i];
                 const uint8_t y = MOD_8_TABLE[i];
-                const uint8_t info = Util::getSurroundInfo(state, x, y, oppSide);
-                if (info) {
-                    const State s = Util::applyAction(state, x, y, side, info, i);
-                    v = Util::max(v, min_value(s, alpha, beta, depth + 1));
+                const State newState = Util::applyAction(state, x, y, side, i);
+                if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
+                    v = Util::max(v, min_value(newState, alpha, beta, depth + 1));
                     if (v >= beta) {
                         return v;
                     }
@@ -144,16 +141,12 @@ public:
         bool hasValidActions = false;
         int8_t v = POS_INFINITY;
         for (uint8_t i = 0; i < 64; ++i) {
-//        for (uint8_t i = __builtin_clzll(state.NOT_ORd_board.word); i >= 0; --i) {
             if (state.isEmpty(i)) {
-//                const uint8_t x = i / 8;
-//                const uint8_t y = i % 8;
                 const uint8_t x = DIVIDE_8_TABLE[i];
                 const uint8_t y = MOD_8_TABLE[i];
-                const uint8_t info = Util::getSurroundInfo(state, x, y, side);
-                if (info) {
-                    const State s = Util::applyAction(state, x, y, oppSide, info, i);
-                    v = Util::min(v, max_value(s, alpha, beta, depth + 1));
+                const State newState = Util::applyAction(state, x, y, oppSide, i);
+                if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
+                    v = Util::min(v, max_value(newState, alpha, beta, depth + 1));
                     if (v <= alpha) {
                         return v;
                     }

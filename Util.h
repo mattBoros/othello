@@ -10,15 +10,6 @@
 static const uint8_t ONE_UINT8 = (uint8_t) 1;
 static const uint8_t ZERO_UINT8 = (uint8_t) 0;
 
-//boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-//(boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-//(boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-//(boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-//(boolToUnsigned8BitInt(hasUpSurround(state, startX, startY, opp)) << 4u) |
-//(boolToUnsigned8BitInt(hasDownSurround(state, startX, startY, opp)) << 5u) |
-//(boolToUnsigned8BitInt(hasLeftSurround(state, startX, startY, opp)) << 6u) |
-//(boolToUnsigned8BitInt(hasRightSurround(state, startX, startY, opp)) << 7u);
-
 static const uint8_t HAS_UP_RIGHT_SURROUND = ONE_UINT8 << 0u;
 static const uint8_t HAS_UP_LEFT_SURROUND = ONE_UINT8 << 1u;
 static const uint8_t HAS_DOWN_RIGHT_SURROUND = ONE_UINT8 << 2u;
@@ -28,230 +19,16 @@ static const uint8_t HAS_DOWN_SURROUND = ONE_UINT8 << 5u;
 static const uint8_t HAS_LEFT_SURROUND = ONE_UINT8 << 6u;
 static const uint8_t HAS_RIGHT_SURROUND = ONE_UINT8 << 7u;
 
+static const uint8_t NULL_BOARD_NUM_PIECES = UINT8_MAX;
+
+static const BitSet NULL_BITSET(0);
+
+static const State NULL_STATE(NULL_BITSET,
+                              NULL_BITSET,
+                              NULL_BOARD_NUM_PIECES,
+                              NULL_BOARD_NUM_PIECES);
 
 namespace Util {
-
-    static inline bool hasUpSurround(const State &state, const uint8_t startX, const uint8_t startY,
-                                     const bool opposite_piece) {
-        uint8_t y = startY + 1;
-        while (y < 8 && state.isPiece(startX, y, opposite_piece)) {
-            ++y;
-        }
-//        return !(y >= 8 || state.isEmpty(startX, y)) && y - startY - 1 != 0;
-        if (y >= 8 || state.isEmpty(startX, y)) {
-            return false;
-        }
-        const uint8_t streak = y - startY - 1;
-        return streak;// != 0;
-    }
-
-    static inline bool hasDownSurround(const State &state, const uint8_t startX, const uint8_t startY,
-                                       const bool opposite_piece) {
-        int8_t y = startY - 1;
-        while (y >= 0 && state.isPiece(startX, y, opposite_piece)) {
-            --y;
-        }
-//        return !(y < 0 || state.isEmpty(startX, y)) && startY - y - 1 != 0;
-        if (y < 0 || state.isEmpty(startX, y)) {
-            return false;
-        }
-        const int8_t streak = startY - y - 1;
-        return streak;// != 0;
-    }
-
-    static inline bool hasLeftSurround(const State &state, const uint8_t startX, const uint8_t startY,
-                                       const bool opposite_piece) {
-        int8_t x = startX - 1;
-        while (x >= 0 && state.isPiece(x, startY, opposite_piece)) {
-            --x;
-        }
-//        return !(x < 0 || state.isEmpty(x, startY)) && startX - x - 1 != 0;
-        if (x < 0 || state.isEmpty(x, startY)) {
-            return false;
-        }
-        const int8_t streak = startX - x - 1;
-        return streak;// != 0;
-    }
-
-    static inline bool hasRightSurround(const State &state, const uint8_t startX, const uint8_t startY,
-                                        const bool opposite_piece) {
-        uint8_t x = startX + 1;
-        while (x < 8 && state.isPiece(x, startY, opposite_piece)) {
-            ++x;
-        }
-//        return !(x >= 8 || state.isEmpty(x, startY)) && x - startX - 1 != 0;
-        if (x >= 8 || state.isEmpty(x, startY)) {
-            return false;
-        }
-        const int8_t streak = x - startX - 1;
-        return streak;// != 0;
-    }
-
-    static inline bool hasUpRightSurround(const State &state, const uint8_t startX, const uint8_t startY,
-                                          const bool opposite_piece) {
-        uint8_t x = startX + 1;
-        uint8_t y = startY + 1;
-        while (x < 8 && y < 8 && state.isPiece(x, y, opposite_piece)) {
-            ++x;
-            ++y;
-        }
-//        return !(y >= 8 || x >= 8 || state.isEmpty(x, y)) && y - startY - 1 != 0;
-        if (y >= 8 || x >= 8 || state.isEmpty(x, y)) {
-            return false;
-        }
-        const int8_t streak = y - startY - 1;
-        return streak;// != 0;
-    }
-
-    static inline bool hasUpLeftSurround(const State &state, const uint8_t startX, const uint8_t startY,
-                                         const bool opposite_piece) {
-        int8_t x = startX - 1;
-        uint8_t y = startY + 1;
-        while (x >= 0 && y < 8 && state.isPiece(x, y, opposite_piece)) {
-            --x;
-            ++y;
-        }
-//        return !(y >= 8 || x < 0 || state.isEmpty(x, y)) && y - startY - 1 != 0;
-        if (y >= 8 || x < 0 || state.isEmpty(x, y)) {
-            return false;
-        }
-        const int8_t streak = y - startY - 1;
-        return streak;// != 0;
-    }
-
-    static inline bool hasDownRightSurround(const State &state, const uint8_t startX, const uint8_t startY,
-                                            const bool opposite_piece) {
-        uint8_t x = startX + 1;
-        int8_t y = startY - 1;
-        while (x < 8 && y >= 0 && state.isPiece(x, y, opposite_piece)) {
-            ++x;
-            --y;
-        }
-//        return !(y < 0 || x >= 8 || state.isEmpty(x, y)) && startY - y - 1 != 0;
-        if (y < 0 || x >= 8 || state.isEmpty(x, y)) {
-            return false;
-        }
-        const int8_t streak = startY - y - 1;
-        return streak;// != 0;
-    }
-
-    static inline bool hasDownLeftSurround(const State &state,
-                                           const uint8_t startX,
-                                           const uint8_t startY,
-                                           const bool opposite_piece) {
-        int8_t x = startX - 1;
-        int8_t y = startY - 1;
-        while (x >= 0 && y >= 0 && state.isPiece(x, y, opposite_piece)) {
-            --x;
-            --y;
-        }
-//        return !(x < 0 || y < 0 || state.isEmpty(x, y)) && startY - y - 1 != 0;
-        if (x < 0 || y < 0 || state.isEmpty(x, y)) {
-            return false;
-        }
-        const int8_t streak = startY - y - 1;
-        return streak;// != 0;
-    }
-
-    static inline uint8_t boolToUnsigned8BitInt(const bool b) {
-        return static_cast<uint8_t>(b);
-    }
-
-    static inline uint8_t
-    getSurroundInfo(const State &state, const uint8_t startX, const uint8_t startY, const bool opp) {
-//        return boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-//               (boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-//               (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-//               (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-//               (boolToUnsigned8BitInt(hasUpSurround(state, startX, startY, opp)) << 4u) |
-//               (boolToUnsigned8BitInt(hasDownSurround(state, startX, startY, opp)) << 5u) |
-//               (boolToUnsigned8BitInt(hasLeftSurround(state, startX, startY, opp)) << 6u) |
-//               (boolToUnsigned8BitInt(hasRightSurround(state, startX, startY, opp)) << 7u);
-        const bool x1 = startX <= 1;
-        const bool y1 = startY <= 1;
-
-        if (x1 && y1) {
-            return boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-                   (boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-                   (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-                   (boolToUnsigned8BitInt(hasUpSurround(state, startX, startY, opp)) << 4u) |
-                   (boolToUnsigned8BitInt(hasRightSurround(state, startX, startY, opp)) << 7u);
-        }
-        const bool y6 = startY >= 6;
-        if (x1 && y6) {
-            return boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-                   (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-                   (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-                   (boolToUnsigned8BitInt(hasDownSurround(state, startX, startY, opp)) << 5u) |
-                   (boolToUnsigned8BitInt(hasRightSurround(state, startX, startY, opp)) << 7u);
-        }
-        const bool x6 = startX >= 6;
-        if (x6 && y6) {
-            return
-                    boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-                    (boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-                    (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-                    (boolToUnsigned8BitInt(hasDownSurround(state, startX, startY, opp)) << 5u) |
-                    (boolToUnsigned8BitInt(hasLeftSurround(state, startX, startY, opp)) << 6u);
-        }
-        if (x6 && y1) {
-            return
-                    boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp) << 1u) |
-                    (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-                    (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-                    (boolToUnsigned8BitInt(hasUpSurround(state, startX, startY, opp)) << 4u) |
-                    (boolToUnsigned8BitInt(hasLeftSurround(state, startX, startY, opp)) << 6u);
-        }
-        if (x1) {
-            return
-                    boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-                    (boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-                    (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-                    (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-                    (boolToUnsigned8BitInt(hasUpSurround(state, startX, startY, opp)) << 4u) |
-                    (boolToUnsigned8BitInt(hasDownSurround(state, startX, startY, opp)) << 5u) |
-                    (boolToUnsigned8BitInt(hasRightSurround(state, startX, startY, opp)) << 7u);
-        }
-        if (y1) {
-            return
-                    boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-                    (boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-                    (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-                    (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-                    (boolToUnsigned8BitInt(hasUpSurround(state, startX, startY, opp)) << 4u) |
-                    (boolToUnsigned8BitInt(hasLeftSurround(state, startX, startY, opp)) << 6u) |
-                    (boolToUnsigned8BitInt(hasRightSurround(state, startX, startY, opp)) << 7u);
-        }
-        if (x6) {
-            return
-                    boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-                    (boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-                    (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-                    (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-                    (boolToUnsigned8BitInt(hasUpSurround(state, startX, startY, opp)) << 4u) |
-                    (boolToUnsigned8BitInt(hasDownSurround(state, startX, startY, opp)) << 5u) |
-                    (boolToUnsigned8BitInt(hasLeftSurround(state, startX, startY, opp)) << 6u);
-        }
-        if (y6) {
-            return
-                    boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-                    (boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-                    (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-                    (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-                    (boolToUnsigned8BitInt(hasDownSurround(state, startX, startY, opp)) << 5u) |
-                    (boolToUnsigned8BitInt(hasLeftSurround(state, startX, startY, opp)) << 6u) |
-                    (boolToUnsigned8BitInt(hasRightSurround(state, startX, startY, opp)) << 7u);
-        }
-        return
-                boolToUnsigned8BitInt(hasUpRightSurround(state, startX, startY, opp)) |
-                (boolToUnsigned8BitInt(hasUpLeftSurround(state, startX, startY, opp)) << 1u) |
-                (boolToUnsigned8BitInt(hasDownRightSurround(state, startX, startY, opp)) << 2u) |
-                (boolToUnsigned8BitInt(hasDownLeftSurround(state, startX, startY, opp)) << 3u) |
-                (boolToUnsigned8BitInt(hasUpSurround(state, startX, startY, opp)) << 4u) |
-                (boolToUnsigned8BitInt(hasDownSurround(state, startX, startY, opp)) << 5u) |
-                (boolToUnsigned8BitInt(hasLeftSurround(state, startX, startY, opp)) << 6u) |
-                (boolToUnsigned8BitInt(hasRightSurround(state, startX, startY, opp)) << 7u);
-    }
 
     static bool inline
     isColor(const uint8_t x, const uint8_t y, const BitSet &blackPieces, const BitSet &whitePieces,
@@ -276,106 +53,166 @@ namespace Util {
 
 
     const inline State applyAction(const State &state,
-                                   const uint8_t xIndex,
-                                   const uint8_t yIndex,
+                                   const uint8_t startX,
+                                   const uint8_t startY,
                                    const bool piece,
-                                   const uint8_t info,
                                    const uint8_t i) {
 //        long int t1 = TIME::getTime();
 
-        BitSet blackPieces = state.blackPieces.clone();
-        BitSet whitePieces = state.whitePieces.clone();
-
-        if (piece) { // piece == Piece::BLACK
-            Helpers::setOnBoard(i, blackPieces);
-        } else {
-            Helpers::setOnBoard(i, whitePieces);
-        }
+//        BitSet blackPieces = state.blackPieces.clone();
+//        BitSet whitePieces = state.whitePieces.clone();
+        BitSet blackPieces(state.blackPieces.word);
+        BitSet whitePieces(state.whitePieces.word);
 
         const bool opposite_piece = !piece;
 
         uint8_t numFlipped = 0;
-        uint8_t x;
-        uint8_t y;
+        int8_t x;
+        int8_t y;
 
-        if (info & HAS_UP_SURROUND) {
-            y = yIndex + 1;
-            while (isColor(xIndex, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(xIndex, y, blackPieces, whitePieces, piece);
+        // HAS UP SURROUND
+        y = startY + 1;
+        while (y < 8 && state.isPiece(startX, y, opposite_piece)) {
+            ++y;
+        }
+        if ((y - startY - 1) && y < 8 && !state.isEmpty(startX, y)) {
+            y = startY + 1;
+            while (isColor(startX, y, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(startX, y, blackPieces, whitePieces, piece);
                 ++y;
                 ++numFlipped;
             }
         }
-        if (info & HAS_DOWN_SURROUND) {
-            y = yIndex - 1;
-            while (isColor(xIndex, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(xIndex, y, blackPieces, whitePieces, piece);
-                --y;
-                ++numFlipped;
-            }
+
+        // HAS DOWN SURROUND
+        y = startY - 1;
+        while (y >= 0 && state.isPiece(startX, y, opposite_piece)) {
+            --y;
         }
-        if (info & HAS_LEFT_SURROUND) {
-            x = xIndex - 1;
-            while (isColor(x, yIndex, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, yIndex, blackPieces, whitePieces, piece);
-                --x;
-                ++numFlipped;
-            }
-        }
-        if (info & HAS_RIGHT_SURROUND) {
-            x = xIndex + 1;
-            while (isColor(x, yIndex, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, yIndex, blackPieces, whitePieces, piece);
-                ++x;
-                ++numFlipped;
-            }
-        }
-        if (info & HAS_UP_RIGHT_SURROUND) {
-            x = xIndex + 1;
-            y = yIndex + 1;
-            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, y, blackPieces, whitePieces, piece);
-                ++x;
-                ++y;
-                ++numFlipped;
-            }
-        }
-        if (info & HAS_UP_LEFT_SURROUND) {
-            x = xIndex - 1;
-            y = yIndex + 1;
-            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, y, blackPieces, whitePieces, piece);
-                --x;
-                ++y;
-                ++numFlipped;
-            }
-        }
-        if (info & HAS_DOWN_RIGHT_SURROUND) {
-            x = xIndex + 1;
-            y = yIndex - 1;
-            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, y, blackPieces, whitePieces, piece);
-                ++x;
-                --y;
-                ++numFlipped;
-            }
-        }
-        if (info & HAS_DOWN_LEFT_SURROUND) {
-            x = xIndex - 1;
-            y = yIndex - 1;
-            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
-                flipColor(x, y, blackPieces, whitePieces, piece);
-                --x;
+        if ((startY - y - 1) && y >= 0 && !state.isEmpty(startX, y)) {
+            y = startY - 1;
+            while (isColor(startX, y, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(startX, y, blackPieces, whitePieces, piece);
                 --y;
                 ++numFlipped;
             }
         }
 
-        return State(blackPieces,
-                     whitePieces,
-                     piece * (state.numBlack + 1 + numFlipped) + opposite_piece * (state.numBlack - numFlipped),
-                     piece * (state.numWhite - numFlipped) + opposite_piece * (state.numWhite + 1 + numFlipped));
+        // HAS LEFT SURROUND
+        x = startX - 1;
+        while (x >= 0 && state.isPiece(x, startY, opposite_piece)) {
+            --x;
+        }
+        if ((startX - x - 1) && x >= 0 && !state.isEmpty(x, startY)) {
+            x = startX - 1;
+            while (isColor(x, startY, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(x, startY, blackPieces, whitePieces, piece);
+                --x;
+                ++numFlipped;
+            }
+        }
 
+        // HAS RIGHT SURROUND
+        x = startX + 1;
+        while (x < 8 && state.isPiece(x, startY, opposite_piece)) {
+            ++x;
+        }
+        if ((x - startX - 1) && x < 8 && !state.isEmpty(x, startY)) {
+            x = startX + 1;
+            while (isColor(x, startY, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(x, startY, blackPieces, whitePieces, piece);
+                ++x;
+                ++numFlipped;
+            }
+        }
+
+        // HAS UP RIGHT SURROUND
+        x = startX + 1;
+        y = startY + 1;
+        while (x < 8 && y < 8 && state.isPiece(x, y, opposite_piece)) {
+            ++x;
+            ++y;
+        }
+        if ((y - startY - 1) && y < 8 && x < 8 && state.hasPiece(x, y)) {
+            x = startX + 1;
+            y = startY + 1;
+            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(x, y, blackPieces, whitePieces, piece);
+                ++x;
+                ++y;
+                ++numFlipped;
+            }
+        }
+
+        // HAS UP LEFT SURROUND
+        x = startX - 1;
+        y = startY + 1;
+        while (x >= 0 && y < 8 && state.isPiece(x, y, opposite_piece)) {
+            --x;
+            ++y;
+        }
+        if ((y - startY - 1) && y < 8 && x >= 0 && state.hasPiece(x, y)) {
+            x = startX - 1;
+            y = startY + 1;
+            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(x, y, blackPieces, whitePieces, piece);
+                --x;
+                ++y;
+                ++numFlipped;
+            }
+        }
+
+        // HAS DOWN RIGHT SURROUND
+        x = startX + 1;
+        y = startY - 1;
+        while (x < 8 && y >= 0 && state.isPiece(x, y, opposite_piece)) {
+            ++x;
+            --y;
+        }
+        if ((startY - y - 1) && y >= 0 && x < 8 && state.hasPiece(x, y)) {
+            x = startX + 1;
+            y = startY - 1;
+            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(x, y, blackPieces, whitePieces, piece);
+                ++x;
+                --y;
+                ++numFlipped;
+            }
+        }
+
+        // HAS DOWN LEFT SURROUND
+        x = startX - 1;
+        y = startY - 1;
+        while (x >= 0 && y >= 0 && state.isPiece(x, y, opposite_piece)) {
+            --x;
+            --y;
+        }
+        if ((startY - y - 1) && x >= 0 && y >= 0 && state.hasPiece(x, y)) {
+            x = startX - 1;
+            y = startY - 1;
+            while (isColor(x, y, blackPieces, whitePieces, opposite_piece)) {
+                flipColor(x, y, blackPieces, whitePieces, piece);
+                --x;
+                --y;
+                ++numFlipped;
+            }
+        }
+
+        if(numFlipped){
+            if (piece) { // piece == Piece::BLACK
+                Helpers::setOnBoard(i, blackPieces);
+            } else {
+                Helpers::setOnBoard(i, whitePieces);
+            }
+            const BitSet new_ORd_board(state.ORd_board.word | SHIFTED_ONES[i]);
+            return State(blackPieces,
+                         whitePieces,
+                         new_ORd_board,
+                         piece * (state.numBlack + 1 + numFlipped) + opposite_piece * (state.numBlack - numFlipped),
+                         piece * (state.numWhite - numFlipped) + opposite_piece * (state.numWhite + 1 + numFlipped));
+        } else {
+            return NULL_STATE;
+        }
 //        if(piece){
 //            return State(blackPieces,
 //                         whitePieces,

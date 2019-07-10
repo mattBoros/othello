@@ -175,7 +175,7 @@ public:
     bool inline get(const uint8_t bitIndex) const {
 //        long int t1 = TIME::getTime();
 //        const bool result = (word & (ONE << bitIndex)) != 0;
-        const bool result = (word & (SHIFTED_ONES[bitIndex])) != 0;
+        const bool result = (word & (SHIFTED_ONES[bitIndex]));
 //        long int t2 = TIME::getTime();
 //        TIME::bsGetTime += (t2 - t1);
         return result;

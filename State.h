@@ -19,7 +19,7 @@ static const uint8_t INDEX_LOOKUP_TABLE[8][8] = {
 };
 
 namespace Helpers {
-    static inline bool getFromBoard(const uint8_t x, const uint8_t y, const BitSet& bitSet) {
+    static inline bool getFromBoard(const uint8_t x, const uint8_t y, const BitSet bitSet) {
         return bitSet.get(INDEX_LOOKUP_TABLE[x][y]);
     }
 
@@ -35,12 +35,16 @@ namespace Helpers {
         bitSet.set(INDEX_LOOKUP_TABLE[x][y]);
     }
 
-    static inline bool getFromBoard(const uint8_t i, const BitSet &bitSet) {
+    static inline bool getFromBoard(const uint8_t i, const BitSet bitSet) {
         return bitSet.get(i);
     }
 
     static inline void setOnBoard(const uint8_t i, BitSet &bitSet, const bool b) {
         bitSet.set(i, b);
+    }
+
+    static inline void clearOnBoard(const uint8_t i, BitSet &bitSet) {
+        bitSet.clear(i);
     }
 
     static inline void setOnBoard(const uint8_t i, BitSet &bitSet) {
@@ -53,28 +57,34 @@ class State {
 public:
     const BitSet blackPieces;
     const BitSet whitePieces;
-    const BitSet NOT_ORd_board;
+    const BitSet ORd_board;
     const uint8_t numBlack;
     const uint8_t numWhite;
 
-    static inline BitSet NOT_OR_Bitsets(const BitSet b1, const BitSet b2){
-        return BitSet(~(b1.word | b2.word));
-//        BitSet newBS;
-//        for (uint8_t i = 0; i < 64; ++i) {
-//            newBS.set(i, b1.get(i) || b2.get(i));
-//        }
-//        return newBS;
-    }
-
     inline State(
-            const BitSet& blackPieces,
-            const BitSet& whitePieces,
+            const BitSet blackPieces,
+            const BitSet whitePieces,
             const uint8_t numBlack,
             const uint8_t numWhite
             ) :
             blackPieces(blackPieces),
             whitePieces(whitePieces),
-            NOT_ORd_board(NOT_OR_Bitsets(blackPieces, whitePieces)),
+            ORd_board(BitSet(blackPieces.word | whitePieces.word)),
+            numBlack(numBlack),
+            numWhite(numWhite) {
+
+    }
+
+    inline State(
+            const BitSet blackPieces,
+            const BitSet whitePieces,
+            const BitSet ORd_board,
+            const uint8_t numBlack,
+            const uint8_t numWhite
+    ) :
+            blackPieces(blackPieces),
+            whitePieces(whitePieces),
+            ORd_board(ORd_board),
             numBlack(numBlack),
             numWhite(numWhite) {
 
@@ -88,12 +98,20 @@ public:
         return Helpers::getFromBoard(x, y, whitePieces);
     }
 
+    bool inline hasPiece(const uint8_t i) const {
+        return ORd_board.get(i);
+    }
+
+    bool inline hasPiece(const uint8_t x, const uint8_t y) const {
+        return ORd_board.get(INDEX_LOOKUP_TABLE[x][y]);
+    }
+
     bool inline isEmpty(const uint8_t x, const uint8_t y) const {
-        return NOT_ORd_board.get(INDEX_LOOKUP_TABLE[x][y]);
+        return !ORd_board.get(INDEX_LOOKUP_TABLE[x][y]);
     }
 
     bool inline isEmpty(const uint8_t i) const {
-        return NOT_ORd_board.get(i);
+        return !ORd_board.get(i);
     }
 
     bool inline isPiece(const uint8_t x, const uint8_t y, const bool piece) const {
