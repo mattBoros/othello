@@ -44,15 +44,11 @@ static const uint8_t MOD_8_TABLE[64] = {
 
 static const unsigned long long MAX_BOARD = ULLONG_MAX;
 
+template<const uint8_t maxDepth,
+        const bool side>
 class AlphaBeta {
 public:
-    const uint8_t maxDepth;
-    const bool side;
-    const bool oppSide;
-
-    AlphaBeta(uint8_t maxDepth, bool side) :
-            maxDepth(maxDepth), side(side), oppSide(!side) {
-    }
+    inline explicit AlphaBeta()= default;
 
     inline Action alpha_beta_search(State &state) const {
         Action *f = max_value_initial(state);
@@ -66,14 +62,14 @@ public:
     int8_t inline eval(const State state) const {
 //        return side * (state.numBlack - state.numWhite) + oppSide * (state.numWhite - state.numBlack);
 
-        return (side - oppSide) * (state.numBlack - state.numWhite);
+//        return (side - oppSide) * (state.numBlack - state.numWhite);
 //        return (side*2 - 1) * (state.numBlack - state.numWhite);
 
-//        if (side) { // side == Piece::BLACK
-//            return state.numBlack - state.numWhite;
-//        } else {
-//            return state.numWhite - state.numBlack;
-//        }
+        if (side) { // side == Piece::BLACK
+            return state.numBlack - state.numWhite;
+        } else {
+            return state.numWhite - state.numBlack;
+        }
     }
 
     inline Action *max_value_initial(const State &state) const {
@@ -86,7 +82,7 @@ public:
             if (state.isEmpty(i)) {
                 const uint8_t x = DIVIDE_8_TABLE[i];
                 const uint8_t y = MOD_8_TABLE[i];
-                const State newState = Util::applyAction(state, x, y, side, i);
+                const State newState = Util::applyAction<side>(state, x, y, i);
                 if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
                     const int8_t min_val = min_value(newState, NEG_INFINITY, POS_INFINITY, 0);
                     if (min_val >= v) {
@@ -112,7 +108,7 @@ public:
             if (state.isEmpty(i)) {
                 const uint8_t x = DIVIDE_8_TABLE[i];
                 const uint8_t y = MOD_8_TABLE[i];
-                const State newState = Util::applyAction(state, x, y, side, i);
+                const State newState = Util::applyAction<side>(state, x, y, i);
                 if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
                     v = Util::max(v, min_value(newState, alpha, beta, depth + 1));
                     if (v >= beta) {
@@ -144,7 +140,7 @@ public:
             if (state.isEmpty(i)) {
                 const uint8_t x = DIVIDE_8_TABLE[i];
                 const uint8_t y = MOD_8_TABLE[i];
-                const State newState = Util::applyAction(state, x, y, oppSide, i);
+                const State newState = Util::applyAction<!side>(state, x, y, i);
                 if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
                     v = Util::min(v, max_value(newState, alpha, beta, depth + 1));
                     if (v <= alpha) {

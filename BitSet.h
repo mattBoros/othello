@@ -139,9 +139,21 @@ static const unsigned long long INVERTED_SHIFTED_ONES[64] = {
         ~(LONG_LONG_ONE << (uint8_t) 63)
 };
 
+
+static const uint8_t INDEX_LOOKUP_TABLE[8][8] = {
+        {0, 1, 2, 3, 4, 5, 6, 7},
+        {8, 9, 10, 11, 12, 13, 14, 15},
+        {16, 17, 18, 19, 20, 21, 22, 23},
+        {24, 25, 26, 27, 28, 29, 30, 31},
+        {32, 33, 34, 35, 36, 37, 38, 39},
+        {40, 41, 42, 43, 44, 45, 46, 47},
+        {48, 49, 50, 51, 52, 53, 54, 55},
+        {56, 57, 58, 59, 60, 61, 62, 63},
+};
+
 class BitSet {
 public:
-    unsigned long long word;
+    mutable unsigned long long word;
 
     BitSet() : word(0LL) {
     }
@@ -172,6 +184,10 @@ public:
         word &= INVERTED_SHIFTED_ONES[bitIndex];
     }
 
+    inline bool get(const uint8_t x, const uint8_t y) const {
+        return get(INDEX_LOOKUP_TABLE[x][y]);
+    }
+
     bool inline get(const uint8_t bitIndex) const {
 //        long int t1 = TIME::getTime();
 //        const bool result = (word & (ONE << bitIndex)) != 0;
@@ -179,6 +195,18 @@ public:
 //        long int t2 = TIME::getTime();
 //        TIME::bsGetTime += (t2 - t1);
         return result;
+    }
+
+    inline void set(const uint8_t x, const uint8_t y, const bool b) {
+        set(INDEX_LOOKUP_TABLE[x][y], b);
+    }
+
+    inline void clear(const uint8_t x, const uint8_t y) {
+        clear(INDEX_LOOKUP_TABLE[x][y]);
+    }
+
+    inline void setXY(const uint8_t x, const uint8_t y) {
+        set(INDEX_LOOKUP_TABLE[x][y]);
     }
 
     BitSet inline clone() const {

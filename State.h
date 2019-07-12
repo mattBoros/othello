@@ -7,51 +7,6 @@
 #include "Piece.h"
 #include "Debug.h"
 
-static const uint8_t INDEX_LOOKUP_TABLE[8][8] = {
-        {0, 1, 2, 3, 4, 5, 6, 7},
-        {8, 9, 10, 11, 12, 13, 14, 15},
-        {16, 17, 18, 19, 20, 21, 22, 23},
-        {24, 25, 26, 27, 28, 29, 30, 31},
-        {32, 33, 34, 35, 36, 37, 38, 39},
-        {40, 41, 42, 43, 44, 45, 46, 47},
-        {48, 49, 50, 51, 52, 53, 54, 55},
-        {56, 57, 58, 59, 60, 61, 62, 63},
-};
-
-namespace Helpers {
-    static inline bool getFromBoard(const uint8_t x, const uint8_t y, const BitSet bitSet) {
-        return bitSet.get(INDEX_LOOKUP_TABLE[x][y]);
-    }
-
-    static inline void setOnBoard(const uint8_t x, const uint8_t y, BitSet &bitSet, const bool b) {
-        bitSet.set(INDEX_LOOKUP_TABLE[x][y], b);
-    }
-
-    static inline void clearOnBoard(const uint8_t x, const uint8_t y, BitSet &bitSet) {
-        bitSet.clear(INDEX_LOOKUP_TABLE[x][y]);
-    }
-
-    static inline void setOnBoard(const uint8_t x, const uint8_t y, BitSet &bitSet) {
-        bitSet.set(INDEX_LOOKUP_TABLE[x][y]);
-    }
-
-    static inline bool getFromBoard(const uint8_t i, const BitSet bitSet) {
-        return bitSet.get(i);
-    }
-
-    static inline void setOnBoard(const uint8_t i, BitSet &bitSet, const bool b) {
-        bitSet.set(i, b);
-    }
-
-    static inline void clearOnBoard(const uint8_t i, BitSet &bitSet) {
-        bitSet.clear(i);
-    }
-
-    static inline void setOnBoard(const uint8_t i, BitSet &bitSet) {
-        bitSet.set(i);
-    }
-
-}
 
 class State {
 public:
@@ -91,11 +46,11 @@ public:
     }
 
     bool inline isBlack(const uint8_t x, const uint8_t y) const {
-        return Helpers::getFromBoard(x, y, blackPieces);
+        return blackPieces.get(x, y);
     }
 
     bool inline isWhite(const uint8_t x, const uint8_t y) const {
-        return Helpers::getFromBoard(x, y, whitePieces);
+        return whitePieces.get(x, y);
     }
 
     bool inline hasPiece(const uint8_t i) const {
@@ -114,7 +69,8 @@ public:
         return !ORd_board.get(i);
     }
 
-    bool inline isPiece(const uint8_t x, const uint8_t y, const bool piece) const {
+    template <const bool piece>
+    bool inline isPiece(const uint8_t x, const uint8_t y) const {
         if (piece) { // piece == Piece::BLACK
             return isBlack(x, y);
         } else {
@@ -123,10 +79,10 @@ public:
     }
 
     char get_char(int i, int j) const {
-        if (Helpers::getFromBoard(i, j, blackPieces)) {
+        if (blackPieces.get(i, j)) {
             return 'B';
         }
-        if (Helpers::getFromBoard(i, j, whitePieces)) {
+        if (whitePieces.get(i, j)) {
             return 'W';
         }
         return '_';
@@ -149,10 +105,10 @@ namespace Helpers2 {
         BitSet &blackPieces = *(new BitSet());
         BitSet &whitePieces = *(new BitSet());
 
-        Helpers::setOnBoard(3, 3, whitePieces, true);
-        Helpers::setOnBoard(4, 4, whitePieces, true);
-        Helpers::setOnBoard(3, 4, blackPieces, true);
-        Helpers::setOnBoard(4, 3, blackPieces, true);
+        whitePieces.setXY(3, 3);
+        whitePieces.setXY(4, 4);
+        blackPieces.setXY(3, 4);
+        blackPieces.setXY(4, 3);
 
         return new State(blackPieces,
                 whitePieces,
@@ -169,10 +125,10 @@ namespace Helpers2 {
 
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
-                if (Helpers::getFromBoard(i, j, blackPiecesBS)) {
+                if (blackPiecesBS.get(i, j)) {
                     ++numBlack;
                 }
-                if (Helpers::getFromBoard(i, j, whitePiecesBS)) {
+                if (whitePiecesBS.get(i, j)) {
                     ++numWhite;
                 }
 

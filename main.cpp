@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
 //    } else {
 //        sideBool = Piece::WHITE;
 //    }
-    bool sideBool = Piece::BLACK;
-    uint8_t depth = 12;
-    AlphaBeta alphaBeta(depth, sideBool);
+    const bool sideBool = Piece::BLACK;
+    const uint8_t depth = 12;
+    const AlphaBeta<depth, sideBool> alphaBeta;
     unsigned long long blackPieces = 2342794498872380161LL;
     unsigned long long whitePieces = 1115969461956412422LL;
     cout << blackPieces << endl;

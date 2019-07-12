@@ -31,32 +31,38 @@ static const State NULL_STATE(NULL_BITSET,
 namespace Util {
 
     static bool inline
-    isColor(const uint8_t x, const uint8_t y, const BitSet &blackPieces, const BitSet &whitePieces,
+    isColor(const uint8_t x, const uint8_t y,
+            const BitSet &blackPieces, const BitSet &whitePieces,
             const bool color) {
-        if (color) { // color == Piece::BLACK
-            return Helpers::getFromBoard(x, y, blackPieces);
-        } else {
-            return Helpers::getFromBoard(x, y, whitePieces);
-        }
+        return (color && blackPieces.get(x, y)) ||
+                (!color && whitePieces.get(x, y));
+//        if (color) { // color == Piece::BLACK
+//            return blackPieces.get(x, y);
+//        } else {
+//            return whitePieces.get(x, y);
+//        }
     }
 
-    static inline void flipColor(const uint8_t x, const uint8_t y, BitSet &blackPieces, BitSet &whitePieces,
-                                 const bool piece) {
+    static inline void flipColor(const uint8_t x, const uint8_t y, BitSet &blackPieces, BitSet &whitePieces
+            ,const bool piece
+            ) {
         if (piece) { // piece == Piece::BLACK
-            Helpers::setOnBoard(x, y, blackPieces);
-            Helpers::clearOnBoard(x, y, whitePieces);
+            blackPieces.setXY(x, y);
+            whitePieces.clear(x, y);
         } else {
-            Helpers::setOnBoard(x, y, whitePieces);
-            Helpers::clearOnBoard(x, y, blackPieces);
+            whitePieces.setXY(x, y);
+            blackPieces.clear(x, y);
         }
     }
 
 
+    template <const bool piece>
     const inline State applyAction(const State &state,
                                    const uint8_t startX,
                                    const uint8_t startY,
-                                   const bool piece,
                                    const uint8_t i) {
+        const bool opposite_piece = !piece;
+
 //        long int t1 = TIME::getTime();
 
 //        BitSet blackPieces = state.blackPieces.clone();
@@ -64,15 +70,13 @@ namespace Util {
         BitSet blackPieces(state.blackPieces.word);
         BitSet whitePieces(state.whitePieces.word);
 
-        const bool opposite_piece = !piece;
-
         uint8_t numFlipped = 0;
         int8_t x;
         int8_t y;
 
         // HAS UP SURROUND
         y = startY + 1;
-        while (y < 8 && state.isPiece(startX, y, opposite_piece)) {
+        while (y < 8 && state.isPiece<opposite_piece>(startX, y)) {
             ++y;
         }
         if ((y - startY - 1) && y < 8 && !state.isEmpty(startX, y)) {
@@ -86,7 +90,7 @@ namespace Util {
 
         // HAS DOWN SURROUND
         y = startY - 1;
-        while (y >= 0 && state.isPiece(startX, y, opposite_piece)) {
+        while (y >= 0 && state.isPiece<opposite_piece>(startX, y)) {
             --y;
         }
         if ((startY - y - 1) && y >= 0 && !state.isEmpty(startX, y)) {
@@ -100,7 +104,7 @@ namespace Util {
 
         // HAS LEFT SURROUND
         x = startX - 1;
-        while (x >= 0 && state.isPiece(x, startY, opposite_piece)) {
+        while (x >= 0 && state.isPiece<opposite_piece>(x, startY)) {
             --x;
         }
         if ((startX - x - 1) && x >= 0 && !state.isEmpty(x, startY)) {
@@ -114,7 +118,7 @@ namespace Util {
 
         // HAS RIGHT SURROUND
         x = startX + 1;
-        while (x < 8 && state.isPiece(x, startY, opposite_piece)) {
+        while (x < 8 && state.isPiece<opposite_piece>(x, startY)) {
             ++x;
         }
         if ((x - startX - 1) && x < 8 && !state.isEmpty(x, startY)) {
@@ -129,7 +133,7 @@ namespace Util {
         // HAS UP RIGHT SURROUND
         x = startX + 1;
         y = startY + 1;
-        while (x < 8 && y < 8 && state.isPiece(x, y, opposite_piece)) {
+        while (x < 8 && y < 8 && state.isPiece<opposite_piece>(x, y)) {
             ++x;
             ++y;
         }
@@ -147,7 +151,7 @@ namespace Util {
         // HAS UP LEFT SURROUND
         x = startX - 1;
         y = startY + 1;
-        while (x >= 0 && y < 8 && state.isPiece(x, y, opposite_piece)) {
+        while (x >= 0 && y < 8 && state.isPiece<opposite_piece>(x, y)) {
             --x;
             ++y;
         }
@@ -165,7 +169,7 @@ namespace Util {
         // HAS DOWN RIGHT SURROUND
         x = startX + 1;
         y = startY - 1;
-        while (x < 8 && y >= 0 && state.isPiece(x, y, opposite_piece)) {
+        while (x < 8 && y >= 0 && state.isPiece<opposite_piece>(x, y)) {
             ++x;
             --y;
         }
@@ -183,7 +187,7 @@ namespace Util {
         // HAS DOWN LEFT SURROUND
         x = startX - 1;
         y = startY - 1;
-        while (x >= 0 && y >= 0 && state.isPiece(x, y, opposite_piece)) {
+        while (x >= 0 && y >= 0 && state.isPiece<opposite_piece>(x, y)) {
             --x;
             --y;
         }
@@ -200,9 +204,9 @@ namespace Util {
 
         if(numFlipped){
             if (piece) { // piece == Piece::BLACK
-                Helpers::setOnBoard(i, blackPieces);
+                blackPieces.set(i);
             } else {
-                Helpers::setOnBoard(i, whitePieces);
+                whitePieces.set(i);
             }
             const BitSet new_ORd_board(state.ORd_board.word | SHIFTED_ONES[i]);
             return State(blackPieces,
