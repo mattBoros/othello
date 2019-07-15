@@ -117,7 +117,7 @@ namespace Helpers2 {
                 );
     }
 
-    static State *getBoard(const unsigned long long blackPieces, const unsigned long long whitePieces) {
+    static const State getBoard(const unsigned long long blackPieces, const unsigned long long whitePieces) {
         const BitSet &blackPiecesBS = *(new BitSet(blackPieces));
         const BitSet &whitePiecesBS = *(new BitSet(whitePieces));
         uint8_t numBlack = 0;
@@ -135,7 +135,7 @@ namespace Helpers2 {
             }
         }
 
-        return new State(blackPiecesBS,
+        return State(blackPiecesBS,
                 whitePiecesBS,
                 numBlack,
                 numWhite

@@ -48,9 +48,16 @@ template<const uint8_t maxDepth,
         const bool side>
 class AlphaBeta {
 public:
-    inline explicit AlphaBeta()= default;
+    uint8_t* killer_moves;
 
-    inline Action alpha_beta_search(State &state) const {
+    inline explicit AlphaBeta(){
+        killer_moves = new uint8_t[maxDepth];
+        for (int i = 0; i < maxDepth; ++i) {
+            killer_moves[i] = UINT8_MAX;
+        }
+    };
+
+    inline const Action alpha_beta_search(const State &state) const {
         Action *f = max_value_initial(state);
         return *f;
     }
@@ -104,14 +111,31 @@ public:
 
         int8_t v = NEG_INFINITY;
         bool hasValidActions = false;
+
+        const uint8_t km_index = killer_moves[depth];
+        if (km_index != UINT8_MAX && state.isEmpty(km_index)) {
+            const uint8_t x = DIVIDE_8_TABLE[km_index];
+            const uint8_t y = MOD_8_TABLE[km_index];
+            const State newState = Util::applyAction<side>(state, x, y, km_index);
+            if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
+                v = Util::max(v, min_value(newState, alpha, beta, depth + 1));
+                if (v >= beta) {
+                    return v;
+                }
+                alpha = Util::max(v, alpha);
+                hasValidActions = true;
+            }
+        }
+
         for (uint8_t i = 0; i < 64; ++i) {
-            if (state.isEmpty(i)) {
+            if (i != km_index && state.isEmpty(i)) {
                 const uint8_t x = DIVIDE_8_TABLE[i];
                 const uint8_t y = MOD_8_TABLE[i];
                 const State newState = Util::applyAction<side>(state, x, y, i);
                 if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
                     v = Util::max(v, min_value(newState, alpha, beta, depth + 1));
                     if (v >= beta) {
+                        killer_moves[depth] = i;
                         return v;
                     }
                     alpha = Util::max(v, alpha);
@@ -136,14 +160,31 @@ public:
 
         bool hasValidActions = false;
         int8_t v = POS_INFINITY;
+
+        const uint8_t km_index = killer_moves[depth];
+        if (km_index != UINT8_MAX && state.isEmpty(km_index)) {
+            const uint8_t x = DIVIDE_8_TABLE[km_index];
+            const uint8_t y = MOD_8_TABLE[km_index];
+            const State newState = Util::applyAction<!side>(state, x, y, km_index);
+            if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
+                v = Util::min(v, max_value(newState, alpha, beta, depth + 1));
+                if (v <= alpha) {
+                    return v;
+                }
+                beta = Util::min(v, beta);
+                hasValidActions = true;
+            }
+        }
+
         for (uint8_t i = 0; i < 64; ++i) {
-            if (state.isEmpty(i)) {
+            if (i != km_index && state.isEmpty(i)) {
                 const uint8_t x = DIVIDE_8_TABLE[i];
                 const uint8_t y = MOD_8_TABLE[i];
                 const State newState = Util::applyAction<!side>(state, x, y, i);
                 if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
                     v = Util::min(v, max_value(newState, alpha, beta, depth + 1));
                     if (v <= alpha) {
+                        killer_moves[depth] = i;
                         return v;
                     }
                     beta = Util::min(v, beta);
