@@ -71,11 +71,12 @@ public:
 
     template <const bool piece>
     bool inline isPiece(const uint8_t x, const uint8_t y) const {
-        if (piece) { // piece == Piece::BLACK
-            return isBlack(x, y);
-        } else {
-            return isWhite(x, y);
-        }
+        return piece ? isBlack(x, y) : isWhite(x, y);
+//        if (piece) { // piece == Piece::BLACK
+//            return isBlack(x, y);
+//        } else {
+//            return isWhite(x, y);
+//        }
     }
 
     char get_char(int i, int j) const {

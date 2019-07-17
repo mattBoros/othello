@@ -25,9 +25,9 @@ int main(int argc, char *argv[]) {
 //        sideBool = Piece::WHITE;
 //    }
     const bool sideBool = Piece::BLACK;
-    const AlphaBeta<12, sideBool> alphaBeta;
-    unsigned long long blackPieces = 2300281674010624LL;
-    unsigned long long whitePieces = 168693248LL;
+    const AlphaBeta<11, sideBool> alphaBeta;
+    unsigned long long blackPieces = 289510328633712640LL;
+    unsigned long long whitePieces = 4672591690525580290LL;
     cout << blackPieces << endl;
     cout << whitePieces << endl;
     State startingBoard = Helpers2::getBoard(blackPieces, whitePieces);

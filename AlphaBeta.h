@@ -42,9 +42,14 @@ static const uint8_t MOD_8_TABLE[64] = {
         0, 1, 2, 3, 4, 5, 6, 7
 };
 
-
-static const uint8_t ORDER[64] = {
+// Indexes start on the inside of the board, and move outwards
+static const uint8_t INSIDE_TO_OUT[64] = {
     37, 29, 21, 20, 19, 18, 26, 34, 42, 43, 44, 45, 46, 38, 30, 22, 14, 13, 12, 11, 10, 9, 17, 25, 33, 41, 49, 50, 51, 52, 53, 54, 0, 1, 2, 3, 4, 5, 6, 7, 15, 23, 31, 39, 47, 55, 63, 62, 61, 60, 59, 58, 57, 56, 48, 40, 32, 24, 16, 8, 28, 27, 35, 36
+};
+
+// Indexes starting on the outside of the board, and move inside
+static const uint8_t OUTSIDE_TO_IN[64] = {
+        36, 35, 27, 28, 8, 16, 24, 32, 40, 48, 56, 57, 58, 59, 60, 61, 62, 63, 55, 47, 39, 31, 23, 15, 7, 6, 5, 4, 3, 2, 1, 0, 54, 53, 52, 51, 50, 49, 41, 33, 25, 17, 9, 10, 11, 12, 13, 14, 22, 30, 38, 46, 45, 44, 43, 42, 34, 26, 18, 19, 20, 21, 29, 37
 };
 
 static const unsigned long long MAX_BOARD = ULLONG_MAX;
@@ -53,7 +58,7 @@ template<const uint8_t maxDepth,
         const bool side>
 class AlphaBeta {
 public:
-    uint8_t *killer_moves;
+    mutable uint8_t* killer_moves;
 
     inline explicit AlphaBeta() {
         killer_moves = new uint8_t[maxDepth];
@@ -72,7 +77,14 @@ public:
     }
 
     inline uint8_t get_move(const uint8_t index, const uint8_t depth) const {
-        return depth == 0 ? ORDER[index] : index;
+//        if(depth <= 2 ){
+//            return INSIDE_TO_OUT[index];
+//        } else
+        if (depth >= maxDepth - 3){
+            return OUTSIDE_TO_IN[index];
+        }
+        return index;
+//        return depth == 0 ? INSIDE_TO_OUT[index] : index;
     }
 
     int8_t inline eval(const State state) const {
@@ -210,7 +222,7 @@ public:
                 }
             }
         }
-        return hasValidActions ? v : eval(state);
+            return hasValidActions ? v : eval(state);
 //        if (!hasValidActions) {
 //            return eval(state);
 //        }
