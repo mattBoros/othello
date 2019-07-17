@@ -55,6 +55,13 @@ namespace Util {
         }
     }
 
+    template <const bool piece>
+    const inline bool isPieceSafe(const State state, const int8_t x, const int8_t y){
+        if(x < 0 || y < 0 || x > 7 || y > 7){
+            return false;
+        }
+        return state.isPiece<piece>(x, y);
+    }
 
     template <const bool piece>
     const inline State applyAction(const State &state,
@@ -62,6 +69,18 @@ namespace Util {
                                    const uint8_t startY,
                                    const uint8_t i) {
         const bool opposite_piece = !piece;
+
+//        if(!isPieceSafe<opposite_piece>(state, startX-1, startY-1) &&
+//                !isPieceSafe<opposite_piece>(state, startX+1, startY+1) &&
+//                !isPieceSafe<opposite_piece>(state, startX-1, startY+1) &&
+//                !isPieceSafe<opposite_piece>(state, startX+1, startY-1) &&
+//                !isPieceSafe<opposite_piece>(state, startX, startY-1) &&
+//                !isPieceSafe<opposite_piece>(state, startX, startY+1) &&
+//                !isPieceSafe<opposite_piece>(state, startX-1, startY) &&
+//                !isPieceSafe<opposite_piece>(state, startX+1, startY)
+//                ){
+//            return NULL_STATE;
+//        }
 
 //        long int t1 = TIME::getTime();
 

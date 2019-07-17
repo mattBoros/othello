@@ -21,25 +21,30 @@ static const int8_t NEG_INFINITY = -127;
 static const int8_t POS_INFINITY = 127;
 
 static const uint8_t DIVIDE_8_TABLE[64] = {
-        0,0,0,0,0,0,0,0,
-        1,1,1,1,1,1,1,1,
-        2,2,2,2,2,2,2,2,
-        3,3,3,3,3,3,3,3,
-        4,4,4,4,4,4,4,4,
-        5,5,5,5,5,5,5,5,
-        6,6,6,6,6,6,6,6,
-        7,7,7,7,7,7,7,7
+        0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2, 2, 2,
+        3, 3, 3, 3, 3, 3, 3, 3,
+        4, 4, 4, 4, 4, 4, 4, 4,
+        5, 5, 5, 5, 5, 5, 5, 5,
+        6, 6, 6, 6, 6, 6, 6, 6,
+        7, 7, 7, 7, 7, 7, 7, 7
 };
 
 static const uint8_t MOD_8_TABLE[64] = {
-    0,1,2,3,4,5,6,7,
-    0,1,2,3,4,5,6,7,
-    0,1,2,3,4,5,6,7,
-    0,1,2,3,4,5,6,7,
-    0,1,2,3,4,5,6,7,
-    0,1,2,3,4,5,6,7,
-    0,1,2,3,4,5,6,7,
-    0,1,2,3,4,5,6,7
+        0, 1, 2, 3, 4, 5, 6, 7,
+        0, 1, 2, 3, 4, 5, 6, 7,
+        0, 1, 2, 3, 4, 5, 6, 7,
+        0, 1, 2, 3, 4, 5, 6, 7,
+        0, 1, 2, 3, 4, 5, 6, 7,
+        0, 1, 2, 3, 4, 5, 6, 7,
+        0, 1, 2, 3, 4, 5, 6, 7,
+        0, 1, 2, 3, 4, 5, 6, 7
+};
+
+
+static const uint8_t ORDER[64] = {
+    37, 29, 21, 20, 19, 18, 26, 34, 42, 43, 44, 45, 46, 38, 30, 22, 14, 13, 12, 11, 10, 9, 17, 25, 33, 41, 49, 50, 51, 52, 53, 54, 0, 1, 2, 3, 4, 5, 6, 7, 15, 23, 31, 39, 47, 55, 63, 62, 61, 60, 59, 58, 57, 56, 48, 40, 32, 24, 16, 8, 28, 27, 35, 36
 };
 
 static const unsigned long long MAX_BOARD = ULLONG_MAX;
@@ -48,9 +53,9 @@ template<const uint8_t maxDepth,
         const bool side>
 class AlphaBeta {
 public:
-    uint8_t* killer_moves;
+    uint8_t *killer_moves;
 
-    inline explicit AlphaBeta(){
+    inline explicit AlphaBeta() {
         killer_moves = new uint8_t[maxDepth];
         for (int i = 0; i < maxDepth; ++i) {
             killer_moves[i] = UINT8_MAX;
@@ -64,6 +69,10 @@ public:
 
     static inline bool terminal_test(const State state) {
         return state.ORd_board.word == MAX_BOARD;
+    }
+
+    inline uint8_t get_move(const uint8_t index, const uint8_t depth) const {
+        return depth == 0 ? ORDER[index] : index;
     }
 
     int8_t inline eval(const State state) const {
@@ -127,15 +136,19 @@ public:
             }
         }
 
-        for (uint8_t i = 0; i < 64; ++i) {
-            if (i != km_index && state.isEmpty(i)) {
-                const uint8_t x = DIVIDE_8_TABLE[i];
-                const uint8_t y = MOD_8_TABLE[i];
-                const State newState = Util::applyAction<side>(state, x, y, i);
+        for (uint8_t index = 0; index < 64; ++index) {
+//            const uint8_t current_move = ORDER[index];
+            const uint8_t current_move = get_move(index, depth);
+//            const uint8_t current_move = index;
+            if (current_move != 27 && current_move != 28 && current_move != 35 && current_move != 36 &&
+                current_move != km_index && state.isEmpty(current_move)) {
+                const uint8_t x = DIVIDE_8_TABLE[current_move];
+                const uint8_t y = MOD_8_TABLE[current_move];
+                const State newState = Util::applyAction<side>(state, x, y, current_move);
                 if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
                     v = Util::max(v, min_value(newState, alpha, beta, depth + 1));
                     if (v >= beta) {
-                        killer_moves[depth] = i;
+                        killer_moves[depth] = current_move;
                         return v;
                     }
                     alpha = Util::max(v, alpha);
@@ -143,10 +156,11 @@ public:
                 }
             }
         }
-        if (!hasValidActions) {
-            return eval(state);
-        }
-        return v;
+        return hasValidActions ? v : eval(state);
+//        if (!hasValidActions) {
+//            return eval(state);
+//        }
+//        return v;
     }
 
     int8_t inline
@@ -176,15 +190,19 @@ public:
             }
         }
 
-        for (uint8_t i = 0; i < 64; ++i) {
-            if (i != km_index && state.isEmpty(i)) {
-                const uint8_t x = DIVIDE_8_TABLE[i];
-                const uint8_t y = MOD_8_TABLE[i];
-                const State newState = Util::applyAction<!side>(state, x, y, i);
+        for (uint8_t index = 0; index < 64; ++index) {
+//            const uint8_t current_move = ORDER[index];
+            const uint8_t current_move = get_move(index, depth);
+//            const uint8_t current_move = index;
+            if (current_move != 27 && current_move != 28 && current_move != 35 && current_move != 36 &&
+                current_move != km_index && state.isEmpty(current_move)) {
+                const uint8_t x = DIVIDE_8_TABLE[current_move];
+                const uint8_t y = MOD_8_TABLE[current_move];
+                const State newState = Util::applyAction<!side>(state, x, y, current_move);
                 if (newState.numBlack != NULL_BOARD_NUM_PIECES) {
                     v = Util::min(v, max_value(newState, alpha, beta, depth + 1));
                     if (v <= alpha) {
-                        killer_moves[depth] = i;
+                        killer_moves[depth] = current_move;
                         return v;
                     }
                     beta = Util::min(v, beta);
@@ -192,10 +210,11 @@ public:
                 }
             }
         }
-        if (!hasValidActions) {
-            return eval(state);
-        }
-        return v;
+        return hasValidActions ? v : eval(state);
+//        if (!hasValidActions) {
+//            return eval(state);
+//        }
+//        return v;
     }
 
 };

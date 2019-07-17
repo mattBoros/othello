@@ -10,8 +10,8 @@ using namespace std;
 #include "Tests.h"
 
 int main(int argc, char *argv[]) {
-    test();
-    exit(0);
+//    test();
+//    exit(0);
 
 //    unsigned long long blackPieces = _atoi64(argv[1]);
 //    unsigned long long whitePieces = _atoi64(argv[2]);
@@ -25,10 +25,9 @@ int main(int argc, char *argv[]) {
 //        sideBool = Piece::WHITE;
 //    }
     const bool sideBool = Piece::BLACK;
-    const uint8_t depth = 12;
-    const AlphaBeta<depth, sideBool> alphaBeta;
-    unsigned long long blackPieces = 2342794498872380161LL;
-    unsigned long long whitePieces = 1115969461956412422LL;
+    const AlphaBeta<12, sideBool> alphaBeta;
+    unsigned long long blackPieces = 2300281674010624LL;
+    unsigned long long whitePieces = 168693248LL;
     cout << blackPieces << endl;
     cout << whitePieces << endl;
     State startingBoard = Helpers2::getBoard(blackPieces, whitePieces);
